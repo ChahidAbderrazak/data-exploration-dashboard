@@ -54,6 +54,7 @@ MySQL = MySQL_connector(
     host=database_credentials["host"],
 )
 
+
 def send_query(query):
     try:
         conn = MySQL.mydb
@@ -64,6 +65,7 @@ def send_query(query):
         conn.close()
     except Exception as e:
         print(f"warning: {e}")
+
 
 def create_table(table_name="table"):
     try:
@@ -115,7 +117,9 @@ def create_item(item: Item):
     try:
         conn = MySQL.mydb
         cursor = conn.cursor()
-        query = f"INSERT INTO {table_name} (name, description, price) VALUES (%s, %s, %s)"
+        query = (
+            f"INSERT INTO {table_name} (name, description, price) VALUES (%s, %s, %s)"
+        )
         cursor.execute(query, (item.name, item.description, item.price))
         conn.commit()
         item_id = cursor.lastrowid
@@ -176,9 +180,7 @@ def update_item(item_id: int, item: Item):
     try:
         conn = MySQL.mydb
         cursor = conn.cursor()
-        query = (
-            f"UPDATE {table_name} SET name = %s, description = %s, price = %s WHERE id = %s"
-        )
+        query = f"UPDATE {table_name} SET name = %s, description = %s, price = %s WHERE id = %s"
         cursor.execute(query, (item.name, item.description, item.price, item_id))
         conn.commit()
         cursor.close()
@@ -275,4 +277,3 @@ async def upload_image(file: UploadFile = File(...)):
         return {"filename": file.filename, "message": "Image uploaded successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error saving file: {str(e)}")
-
