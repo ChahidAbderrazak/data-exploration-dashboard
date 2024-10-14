@@ -2,7 +2,7 @@ import os
 
 from fastapi.testclient import TestClient
 
-from src.webapp import MySQL, app, create_table, delete_table, does_table_Exists
+from webapp import MySQL, app, create_table, delete_table, does_table_Exists
 
 # Instantiate the client
 client = TestClient(app)
