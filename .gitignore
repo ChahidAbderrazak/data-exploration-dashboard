@@ -1,3 +1,25 @@
+
+cache/**
+data/**
+**/artifacts/**
+**mlruns/**
+**.env
+**.env-ip
+dev/**
+
+### Terraform ###
+# Local .terraform directories
+**/.terraform/*
+cache/**
+**.terraform.lock.hcl
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+### Other###
+dashbaord.session.sql
+.vscode/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -160,3 +182,4 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
