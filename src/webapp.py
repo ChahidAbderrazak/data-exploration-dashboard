@@ -6,8 +6,8 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from mysql.connector import Error
 from pydantic import BaseModel
 
-from src.lib.configuration import setup_database
-from src.lib.mysql_utils import MySQL_connector
+from lib.configuration import setup_database
+from lib.mysql_utils import MySQL_connector
 
 app = FastAPI()
 
