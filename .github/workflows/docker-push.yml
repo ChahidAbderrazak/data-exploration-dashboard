@@ -46,8 +46,8 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
-          context: ./src
-          file: Dockerfile.api
+          context: .
+          file: Dockerfile
           push: true
           tags: '${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}' 
 

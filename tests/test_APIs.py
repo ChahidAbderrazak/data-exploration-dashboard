@@ -51,7 +51,7 @@ class Test_Dashboard_APIs:
         assert response_json["description"] == data["description"]
         assert response_json["price"] == data["price"]
 
-        # TODO: upadte teh MySQL database
+        # TODO: update the MySQL database
         # Check that the item was actually inserted into the database
         # with TestingSessionLocal() as db:
         #     item_in_db = db.query(Item).filter(Item.name == data["name"]).first()

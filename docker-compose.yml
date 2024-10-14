@@ -47,8 +47,8 @@ services:
     links:
       - "db"
     build:
-      context: ./src
-      dockerfile: Dockerfile.api
+      context: .
+      dockerfile: Dockerfile
 
     image: ${WEBAPP_IMG_BUILDER}:${VERSION}
     container_name: '${WEBAPP_CNTNR_NAME}'
