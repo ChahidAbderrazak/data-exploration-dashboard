@@ -1,0 +1,71 @@
+version: "3.7"
+
+networks:
+  net:
+    driver: bridge
+
+services:
+
+  db:
+    container_name: '${MySQL_CNTNR_NAME}'
+    image: mysql:5.7
+    ports:
+        - "32001:3306"
+    environment:
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
+        MYSQL_USER: ${MYSQL_USER}
+        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+
+  #--------------  PROJECT APP --------------
+  app:
+    links:
+      - "db"
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+
+    image: ${APP_CNTNR_NAME}:${VERSION}
+    container_name: '${APP_CNTNR_NAME}'
+    environment:
+      - APP_SERVER_PORT=${APP_SERVER_PORT}
+      - PYTHON_VERSION=${PYTHON_VERSION}
+
+    ports:
+      - '${APP_HOST_PORT}:${APP_SERVER_PORT}'
+      
+    networks:
+      - net
+    # network_mode: host
+
+    volumes: 
+      - './artifacts:/app/artifacts'
+      - './config:/app/config'
+      - './logs:/app/logs'
+      - './data:/app/data'
+    command: 'python src/main.py'
+
+
+  webapp:
+    links:
+      - "db"
+    build:
+      context: ./webapp
+      dockerfile: Dockerfile
+
+    image: ${WEBAPP_IMG_BUILDER}:${VERSION}
+    container_name: '${WEBAPP_CNTNR_NAME}'
+    environment:
+      - WEBAPP_SERVER_PORT=${WEBAPP_SERVER_PORT}
+    ports:
+      - '${WEBAPP_HOST_PORT}:${WEBAPP_SERVER_PORT}'
+      
+    networks:
+      - net
+    volumes: 
+      - './data:/app/data'
+    # command: 'python src/webapp.py'
+    command: 'uvicorn src.webapp:app --reload'
+
+
