@@ -1,5 +1,6 @@
 ###------------------------------------------------------------------------------------------------
 import os
+import sys
 
 import pytest
 
@@ -7,7 +8,12 @@ import pytest
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 # Skip pytest if we are on GITHUB_ACTIONS
 if IN_GITHUB_ACTIONS:
+
+    def test_IN_GITHUB():
+        pass
+
     pytest.skip(reason="Test doesn't work in Github Actions.", allow_module_level=True)
+    sys.exit(0)
 ###------------------------------------------------------------------------------------------------
 
 

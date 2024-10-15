@@ -22,7 +22,7 @@ python-multipart
 
 ##### MySQL packages
 mysql-connector-python  # MySQL
-# psycopg2 # PostgreSQLs
+psycopg2 # PostgreSQLs
 
 ##### General packages
 python-box==6.0.2
