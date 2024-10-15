@@ -1,14 +1,17 @@
 import os
+
 import pytest
+
 # check if we are on GITHUB_ACTIONS
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
-# Skip pytest if we are on GITHUB_ACTIONS
-@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
-def test_GITHUB_ACTIONS():
-    assert os.getenv("GITHUB_URL") is None
 
-from lib.configuration import setup_database
-from lib.mysql_utils import SQL_connector
+try:
+    from lib.configuration import setup_database
+    from lib.mysql_utils import SQL_connector
+except:
+    from webapp.lib.configuration import setup_database
+    from webapp.lib.mysql_utils import SQL_connector
+
 
 root_folder = "data/TestTables"
 database_type_list = ("PostgreSQL", "MySQL", "WrongSQL")
@@ -19,16 +22,24 @@ table_name = "test"
 
 
 # connect to the database
-MySQL = SQL_connector(
-    database_type=database_type,
-    root_folder=root_folder,
-    username=database_credentials["username"],
-    password=database_credentials["password"],
-    database=database_credentials["database"],
-    host=database_credentials["host"],
-)
+MySQL = None
 
 
+# Skip pytest if we are on GITHUB_ACTIONS
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
+def test_SQL_connector(MySQL):
+    MySQL = SQL_connector(
+        database_type=database_type,
+        root_folder=root_folder,
+        username=database_credentials["username"],
+        password=database_credentials["password"],
+        database=database_credentials["database"],
+        host=database_credentials["host"],
+    )
+
+
+# Skip pytest if we are on GITHUB_ACTIONS
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 class Test_SQL_connector:
     def test_create_database(self):
 

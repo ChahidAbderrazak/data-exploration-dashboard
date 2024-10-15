@@ -23,8 +23,8 @@ setuptools.setup(
     long_description=read("README.md"),
     license="BSD",
     url=PROJECT_URL,
-    package_dir={"": "webapp"},
-    packages=setuptools.find_packages(where="webapp"),
+    package_dir={"": "."},
+    packages=setuptools.find_packages(where="."),
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Topic :: Utilities",

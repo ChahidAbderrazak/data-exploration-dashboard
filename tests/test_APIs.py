@@ -9,14 +9,18 @@ def test_GITHUB_ACTIONS():
 
 
 from fastapi.testclient import TestClient
-from webapp import app
+try:
+    from webapp import app
+except:
+    from webapp.webapp import app
 
 # Instantiate the client
 client = TestClient(app)
 print(f" root={os.getcwd()}")
 table_name = "demo"
 
-
+# Skip pytest if we are on GITHUB_ACTIONS
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 class Test_Dashboard_APIs:
     # def test_database_connection(self):
     #     try:
