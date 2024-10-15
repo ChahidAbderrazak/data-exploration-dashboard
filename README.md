@@ -6,7 +6,8 @@ My response to a data engineering competition  hosted by [Desa Analytics](https:
 - [x] build from a dockerfile
 - [x] run MySQL database + FastAPI server
 - [ ] run data processing and exploration pipeline using demo data
-- [ ] submit the challenge results
+- [ ] design/implement a high-level insights dashboard using NodeJs/HTML/CSS-based develop to visualize the data processing outcomes and insights
+- [ ] submit zipped folder containing all competition materials
 
 
 
@@ -76,4 +77,3 @@ Download the competition csv file from [here](https://drive.google.com/drive/fol
 # Acknowledgement
 
 Thank you contact me ot post your issues/comments in running the code. 
-*
