@@ -18,33 +18,33 @@ services:
         MYSQL_PASSWORD: ${MYSQL_PASSWORD}
 
 
-  # #--------------  PROJECT APP --------------
-  # app:
-  #   links:
-  #     - "db"
-  #   build:
-  #     context: ./src
-  #     dockerfile: Dockerfile
+  #--------------  PROJECT APP --------------
+  app:
+    links:
+      - "db"
+    build:
+      context: ./src
+      dockerfile: Dockerfile
 
-  #   image: ${APP_CNTNR_NAME}:${VERSION}
-  #   container_name: '${APP_CNTNR_NAME}'
-  #   environment:
-  #     - APP_SERVER_PORT=${APP_SERVER_PORT}
-  #     - PYTHON_VERSION=${PYTHON_VERSION}
+    image: ${APP_CNTNR_NAME}:${VERSION}
+    container_name: '${APP_CNTNR_NAME}'
+    environment:
+      - APP_SERVER_PORT=${APP_SERVER_PORT}
+      - PYTHON_VERSION=${PYTHON_VERSION}
 
-  #   ports:
-  #     - '${APP_HOST_PORT}:${APP_SERVER_PORT}'
+    ports:
+      - '${APP_HOST_PORT}:${APP_SERVER_PORT}'
       
-  #   networks:
-  #     - net
-  #   # network_mode: host
+    networks:
+      - net
+    # network_mode: host
 
-  #   volumes: 
-  #     - './artifacts:/app/artifacts'
-  #     - './config:/app/config'
-  #     - './logs:/app/logs'
-  #     - './data:/app/data'
-  #   command: 'python src/main.py'
+    volumes: 
+      - './artifacts:/app/artifacts'
+      - './config:/app/config'
+      - './logs:/app/logs'
+      - './data:/app/data'
+    command: 'python src/main.py'
 
 
   webapp:
