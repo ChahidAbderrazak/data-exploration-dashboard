@@ -5,7 +5,7 @@ data/**
 **mlruns/**
 **.env**
 **.env-ip**
-dev/**
+/bash/dev/**
 *.session.sql
 tests/test_syntax.py
 

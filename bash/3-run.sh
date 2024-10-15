@@ -4,9 +4,6 @@ docker system prune -f
 clear
 . .env
 
-# #### -----------------------   RUNNING THE MLOPS SERVERS   -------------------------------
-# bash bash/2-run-mlops-servers.sh
-
 #### -----------------------   RUNNING THE PROJECT DOCKER  -------------------------------
 # run the the project container(s)
 echo && echo "[${PROJECT_NAME}][dev] running the development container(s)..."
