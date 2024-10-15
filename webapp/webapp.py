@@ -1,5 +1,7 @@
 import csv
+import shutil
 from io import StringIO
+from pathlib import Path
 from typing import List
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -7,21 +9,28 @@ from mysql.connector import Error
 from pydantic import BaseModel
 
 from lib.configuration import setup_database
-from lib.mysql_utils import MySQL_connector
+from lib.mysql_utils import SQL_connector
 
 app = FastAPI()
 
 # Database connection parameters
-database_credentials = setup_database()
+database_type = "MySQL"  # "PostgreSQL"
+database_credentials = setup_database(database_type=database_type)
 table_name = "product"
 root_folder = "data/Tables"
 upload_folder = "data/tmp"
+create_table_query = f"""
+            CREATE TABLE {table_name} (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    name VARCHAR(100),
+                    description TEXT,
+                    price DECIMAL(10, 2)
+                    );
+            """
+
 # Define where to save uploaded files
 
 # Create the directory if it doesn't exist
-import shutil
-from pathlib import Path
-
 Path(root_folder).mkdir(parents=True, exist_ok=True)
 Path(upload_folder).mkdir(parents=True, exist_ok=True)
 
@@ -45,67 +54,16 @@ class ItemResponse(BaseModel):
 
 demo_item = Item(name="banana", description="description", price="10")
 
-
-MySQL = MySQL_connector(
+MySQL = SQL_connector(
+    database_type=database_type,
     root_folder=root_folder,
     username=database_credentials["username"],
     password=database_credentials["password"],
     database=database_credentials["database"],
     host=database_credentials["host"],
 )
-
-
-def send_query(query):
-    try:
-        conn = MySQL.mydb
-        cursor = conn.cursor()
-        cursor.execute(query)
-        conn.commit()
-        cursor.close()
-        conn.close()
-    except Exception as e:
-        print(f"warning: {e}")
-
-
-def create_table(table_name="table"):
-    try:
-        query = f"CREATE TABLE {table_name} ( \
-                            id INT AUTO_INCREMENT PRIMARY KEY, \
-                            name VARCHAR(100),\
-                            description TEXT,\
-                            price DECIMAL(10, 2)\
-                            );"
-
-        #  send the query
-        send_query(query)
-
-        return 0
-    except:
-        return 1
-
-
-def delete_table(table_name="table"):
-    query = f"DROP TABLE {table_name};"
-
-    #  send the query
-    send_query(query)
-
-
-# initialization
-def does_table_Exists(table_name="table"):
-    conn = MySQL.mydb
-    cursor = conn.cursor()
-    cursor.execute("SHOW tables;")
-    list_tables = cursor.fetchall()
-    for table_ in list_tables:
-        print("table name", table_[0])
-        if table_[0] == table_name:
-            return True
-    return False
-
-
-if not does_table_Exists(table_name):
-    create_table(table_name)
+# create a table if it does not exist
+MySQL.create_table(table_name=table_name, query=create_table_query)
 
 
 # Create item
@@ -115,7 +73,7 @@ def create_item(item: Item):
     insert a new row to the product table
     """
     try:
-        conn = MySQL.mydb
+        conn = MySQL.connection
         cursor = conn.cursor()
         query = (
             f"INSERT INTO {table_name} (name, description, price) VALUES (%s, %s, %s)"
@@ -138,7 +96,7 @@ def get_items():
     Retrieve all row from the product table
     """
     try:
-        conn = MySQL.mydb
+        conn = MySQL.connection
         cursor = conn.cursor(dictionary=True)
         query = f"SELECT * FROM {table_name}"
         cursor.execute(query)
@@ -147,6 +105,7 @@ def get_items():
         conn.close()
         return items
     except Error as e:
+        print(f"error: {e}")
         raise HTTPException(status_code=500, detail="Database error")
 
 
@@ -157,7 +116,7 @@ def get_item(item_id: int):
     Retrieve the row of the id={item_id} from the product table
     """
     try:
-        conn = MySQL.mydb
+        conn = MySQL.connection
         cursor = conn.cursor(dictionary=True)
         query = f"SELECT * FROM {table_name} WHERE id = %s"
         cursor.execute(query, (item_id,))
@@ -168,6 +127,7 @@ def get_item(item_id: int):
             raise HTTPException(status_code=404, detail="Item not found")
         return item
     except Error as e:
+        print(f"error: {e}")
         raise HTTPException(status_code=500, detail="Database error")
 
 
@@ -178,7 +138,7 @@ def update_item(item_id: int, item: Item):
     Update the row of the id={item_id} from the product table
     """
     try:
-        conn = MySQL.mydb
+        conn = MySQL.connection
         cursor = conn.cursor()
         query = f"UPDATE {table_name} SET name = %s, description = %s, price = %s WHERE id = %s"
         cursor.execute(query, (item.name, item.description, item.price, item_id))
@@ -189,6 +149,7 @@ def update_item(item_id: int, item: Item):
             raise HTTPException(status_code=404, detail="Item not found")
         return {**item.dict(), "id": item_id}
     except Error as e:
+        print(f"error: {e}")
         raise HTTPException(status_code=500, detail="Database error")
 
 
@@ -199,7 +160,7 @@ def delete_item(item_id: int):
     Delete the row of the id={item_id} from the product table
     """
     try:
-        conn = MySQL.mydb
+        conn = MySQL.connection
         cursor = conn.cursor()
         query = f"DELETE FROM {table_name} WHERE id = %s"
         cursor.execute(query, (item_id,))
@@ -210,6 +171,7 @@ def delete_item(item_id: int):
             raise HTTPException(status_code=404, detail="Item not found")
         return {"detail": "Item deleted"}
     except Error as e:
+        print(f"error: {e}")
         raise HTTPException(status_code=500, detail="Database error")
 
 
@@ -252,6 +214,7 @@ async def upload_csv(file: UploadFile = File(...)):
         return {"filename": file.filename, "data": csv_data}
 
     except Exception as e:
+        print(f"error: {e}")
         raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
 
 
@@ -276,4 +239,5 @@ async def upload_image(file: UploadFile = File(...)):
 
         return {"filename": file.filename, "message": "Image uploaded successfully"}
     except Exception as e:
+        print(f"error: {e}")
         raise HTTPException(status_code=500, detail=f"Error saving file: {str(e)}")

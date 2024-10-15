@@ -15,6 +15,8 @@ ln -s "$(pwd)/jenkins-data/jobs" ../../jenkins-outputs
 
 #### ---------------   LOAD / SHOW THE SERVERS IPS SERVERS  --------------------
 cp .env-ip $dir/.env-ip-mlops
+cp .env $dir/.env-mlops
+
 cd $dir
 . .env-ip-mlops
 . .env
@@ -28,3 +30,7 @@ if [ "$MLFLOW_SERVER_URL" != "" ] ; then
 	echo "   -> S3_LOCAL_DIR=${S3_LOCAL_DIR}"
 	# xdg-open "${MLFLOW_SERVER_URL}"
 fi
+
+# run the projects servers
+echo $(pwd)
+bash bash/4-open-app-servres-in-browser.sh

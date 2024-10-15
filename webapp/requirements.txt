@@ -4,13 +4,6 @@
 # boto3==1.17.90
 python-dotenv==0.17.1
 
-# ##### development
-# jupyterlab
-pytest 
-sqlalchemy
-httpx
-
-
 # ##### Deep learning packages
 # scikit-learn
 
@@ -23,10 +16,13 @@ httpx
 ######## Fast API packages
 fastapi 
 uvicorn
+Jinja2
 python-multipart
-##### MySQL packages
-mysql-connector-python
 
+
+##### MySQL packages
+mysql-connector-python  # MySQL
+# psycopg2 # PostgreSQLs
 
 ##### General packages
 python-box==6.0.2
@@ -38,6 +34,13 @@ pyYAML
 tqdm
 joblib
 types-PyYAML
+
+
+# ##### development
+jupyterlab
+pytest 
+black
+flake8
 
 
 ## setup the project packages

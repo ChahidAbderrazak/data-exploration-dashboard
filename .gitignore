@@ -3,9 +3,11 @@ cache/**
 data/**
 **/artifacts/**
 **mlruns/**
-**.env
-**.env-ip
+**.env**
+**.env-ip**
 dev/**
+*.session.sql
+tests/test_syntax.py
 
 ### Terraform ###
 # Local .terraform directories
@@ -183,4 +185,3 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-.env-ip-mlops

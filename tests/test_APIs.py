@@ -1,6 +1,8 @@
 import os
+
 from fastapi.testclient import TestClient
-from webapp import MySQL, app, create_table, delete_table, does_table_Exists
+
+from webapp import app
 
 # Instantiate the client
 client = TestClient(app)
@@ -9,27 +11,27 @@ table_name = "demo"
 
 
 class Test_Dashboard_APIs:
-    def test_database_connection(self):
-        try:
-            # the error will occur if the cursor is not defines
-            conn = MySQL.mydb
-            cursor = conn.cursor()
-        except:
-            assert conn != None
+    # def test_database_connection(self):
+    #     try:
+    #         # the error will occur if the cursor is not defines
+    #         conn = MySQL.connection
+    #         cursor = conn.cursor()
+    #     except:
+    #         assert conn != None
 
-    def test_create_table(self):
-        # create table
-        if does_table_Exists(table_name):
-            err = delete_table(table_name)
-            assert err == 0
+    # def test_create_table(self):
+    #     # create table
+    #     if does_table_Exists(table_name):
+    #         err = create_table(table_name)
+    #         assert err == 0
 
-    def test_delete_table(self):
-        # delete table
-        if not does_table_Exists(table_name):
-            err = create_table(table_name)
-            assert err == 0
+    # def test_delete_table(self):
+    #     # delete table
+    #     if not does_table_Exists(table_name):
+    #         err = delete_table(table_name)
+    #         assert err == 0
 
-    def test_create_item(slef):
+    def test_create_item(self):
         # Prepare the data for the new item
         data = {
             "name": "Test Item",

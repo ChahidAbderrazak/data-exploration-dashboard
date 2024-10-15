@@ -1,6 +1,6 @@
 #/bin/bash
-
-#  edbugin the code
+# pip install flake8 black
+#  debuggin the code
 echo && echo "[${PROJECT_NAME}][dev] Linting the codes."
 #------------------------------------------------------------------------
 echo "Debuging the code..."

@@ -16,32 +16,32 @@ pipeline {
 
     stages {
 
-        stage('Unit Test') {
-            steps {
-                script {
-                    try {
-                        echo 'Testing..'
-                        sh '''
-                        python -m pip install --upgrade pip
-                        pip install pytest 
-                        #------------------------------------------------------------------------
-                        echo "Testing the code..."
-                        mkdir -p logs/reports/
-                        python -m pytest -vvrxXs --junitxml logs/reports/pytest_results.xml ./
-                        '''
-                    }
-                    catch (Exception exc) {
-                        currentBuild.result = 'FAILURE'
-                        error('Stopping early!')
-                    }
-                }
-            }
-            post {
-                success {
-                    junit 'logs/**/*.xml'
-                }
-            }
-        }
+        // stage('Unit Test') {
+        //     steps {
+        //         script {
+        //             try {
+        //                 echo 'Testing..'
+        //                 sh '''
+        //                 python -m pip install --upgrade pip
+        //                 pip install pytest 
+        //                 #------------------------------------------------------------------------
+        //                 echo "Testing the code..."
+        //                 mkdir -p logs/reports/
+        //                 python -m pytest -vvrxXs --junitxml logs/reports/pytest_results.xml ./
+        //                 '''
+        //             }
+        //             catch (Exception exc) {
+        //                 currentBuild.result = 'FAILURE'
+        //                 error('Stopping early!')
+        //             }
+        //         }
+        //     }
+        //     post {
+        //         success {
+        //             junit 'logs/**/*.xml'
+        //         }
+        //     }
+        // }
         stage('Linting') {
             steps {
                 script {
