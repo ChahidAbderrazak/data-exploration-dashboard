@@ -1,14 +1,17 @@
+###------------------------------------------------------------------------------------------------
 import os
+
 import pytest
+
 # check if we are on GITHUB_ACTIONS
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 # Skip pytest if we are on GITHUB_ACTIONS
-@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
-def test_GITHUB_ACTIONS():
-    assert os.getenv("GITHUB_URL") is None
-
+if IN_GITHUB_ACTIONS:
+    pytest.skip(reason="Test doesn't work in Github Actions.", allow_module_level=True)
+###------------------------------------------------------------------------------------------------
 
 from fastapi.testclient import TestClient
+
 try:
     from webapp import app
 except:
@@ -19,8 +22,7 @@ client = TestClient(app)
 print(f" root={os.getcwd()}")
 table_name = "demo"
 
-# Skip pytest if we are on GITHUB_ACTIONS
-@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
+
 class Test_Dashboard_APIs:
     # def test_database_connection(self):
     #     try:
