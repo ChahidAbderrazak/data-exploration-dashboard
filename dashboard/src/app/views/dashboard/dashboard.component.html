@@ -1,9 +1,35 @@
+<div class="container mt-1">
+  <!-- File Upload Section -->
+  <div class="input-group">
+    <span class="input-group-addon input-group-prepend"><i class="glyphicon glyphicon-picture"></i></span>
+    <input type="file" class="form-control mb-3" (change)="onFileSelected($event)">
+    <span class="input-group-btn input-group-append">
+    <button class="btn btn-primary" (click)="uploadCSV()">Upload CSV data</button>
+    </span>
+    <p class="text-danger" *ngIf="errorMessage">{{ errorMessage }}</p>
+  </div>
+
+  <!-- Display CSV Details if Available -->
+  
+  <div *ngIf="csvDetails">
+    <h3>CSV File Details</h3>
+    <p><strong>Filename:</strong> {{ csvDetails.filename }}</p>
+    <p><strong>topic:</strong> {{ csvDetails.topic }}</p>
+    <p><strong>Data:</strong> <br> 
+      x={{ csvData.x }} <br> 
+      y={{ csvData.y }} 
+    </p>
+  </div>
+
+</div>
+
 <app-widgets-dropdown />
+
 <c-card class="my-4">
   <c-card-body>
     <c-row>
       <c-col sm="5">
-        <h4 class="card-title mb-0" id="traffic">Purchase Activity</h4>
+        <h4 class="card-title mb-0" id="traffic">Purchase Activities</h4>
         <div class="small text-body-secondary">January - December 2023</div>
       </c-col>
       <c-col class="d-none d-md-block" sm="7">

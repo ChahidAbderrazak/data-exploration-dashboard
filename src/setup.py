@@ -2,8 +2,8 @@ import os
 
 import setuptools
 
-PROJECT_NAME = "Data Science Pipeline"
-PROJECT_DESCRIPTION = " create a data exploration Pipeline"
+PROJECT_NAME = "Data Science Pipeline and API server"
+PROJECT_DESCRIPTION = " create a data exploration Pipeline with Flask API server"
 PROJECT_URL = ""
 VERSION = "1.0.0"
 AUTHOR_USER_NAME = "Abderrazak Chahid"

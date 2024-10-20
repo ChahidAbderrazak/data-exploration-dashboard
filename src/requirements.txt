@@ -1,4 +1,3 @@
-
 ######## MLFLOW / SQL data packages
 # mlflow>=1.2.0
 mlflow[extras]
@@ -35,11 +34,10 @@ psycopg2 # PostgreSQLs
 
 ##### development
 jupyterlab
+nbconvert   #converts notebooks to various other formats: pdf, png, html
 pytest
 flake8
 black
-
-
 
 ##### General packages
 matplotlib
@@ -50,7 +48,6 @@ ensure==1.0.2
 PyYAML
 tqdm
 
-
-
-
+## setup the project packages
+-e .
 

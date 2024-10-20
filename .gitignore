@@ -8,9 +8,15 @@ data/**
 /bash/dev/**
 *.session.sql
 **/test_syntax.py
+**/tmp/**
+
+
+**/syntax.py
 
 ### Node.JS ###
 **/node_modules/**
+package-lock.json
+
 
 ### Terraform ###
 # Local .terraform directories

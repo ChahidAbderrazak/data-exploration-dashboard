@@ -9,6 +9,8 @@ import {
   signal,
   WritableSignal,
 } from '@angular/core';
+import { NgIf, NgFor } from '@angular/common';
+
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ChartOptions } from 'chart.js';
 import {
@@ -34,6 +36,8 @@ import { IconDirective } from '@coreui/icons-angular';
 import { WidgetsBrandComponent } from '../widgets/widgets-brand/widgets-brand.component';
 import { WidgetsDropdownComponent } from '../widgets/widgets-dropdown/widgets-dropdown.component';
 import { DashboardChartsData, IChartProps } from './dashboard-charts-data';
+
+import axios from 'axios';
 
 interface IClient {
   name: string;
@@ -75,6 +79,8 @@ interface IClient {
     CardHeaderComponent,
     TableDirective,
     AvatarComponent,
+    NgIf,
+    NgFor,
   ],
 })
 export class DashboardComponent implements OnInit {
@@ -82,6 +88,53 @@ export class DashboardComponent implements OnInit {
   readonly #document: Document = inject(DOCUMENT);
   readonly #renderer: Renderer2 = inject(Renderer2);
   readonly #chartsData: DashboardChartsData = inject(DashboardChartsData);
+
+  // uplaod csv file
+
+  csvFile: File | null = null;
+  csvDetails: any = null;
+  csvData: any = null;
+  errorMessage: string = '';
+
+  constructor() {}
+
+  // Handle file selection event
+  onFileSelected(event: any): void {
+    this.csvFile = event.target.files[0];
+  }
+
+  // Function to upload CSV file
+  uploadCSV(): void {
+    if (!this.csvFile) {
+      this.errorMessage = 'Please select a CSV file.';
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', this.csvFile);
+
+    // Make the API call to upload the CSV file to FastAPI
+    axios
+      .post('http://localhost:8080/upload-csv/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((response) => {
+        if (response.data.status === 'success') {
+          // Display the CSV details
+           
+          this.csvDetails = response.data.metadata;
+          this.csvData= response.data.data;
+          this.errorMessage = '';
+        } else {
+          // Handle error response from the backend
+          this.errorMessage = 'Error: ' + response.data.message;
+        }
+      })
+      .catch((error) => {
+        console.error('Error uploading CSV:', error);
+        this.errorMessage = 'Failed to upload CSV file.';
+      });
+  }
 
   public clients: IClient[] = [
     {
