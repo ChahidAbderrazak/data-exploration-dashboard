@@ -7,7 +7,17 @@ data/**
 **.env-ip**
 /bash/dev/**
 *.session.sql
-tests/test_syntax.py
+**/test_syntax.py
+**/tmp/**
+
+
+**/syntax.py
+.Trash**
+
+### Node.JS ###
+**/node_modules/**
+package-lock.json
+
 
 ### Terraform ###
 # Local .terraform directories
@@ -19,7 +29,7 @@ cache/**
 *.tfstate.*
 
 ### Other###
-dashbaord.session.sql
+**/dashbaord.session.sql
 .vscode/
 
 # Byte-compiled / optimized / DLL files

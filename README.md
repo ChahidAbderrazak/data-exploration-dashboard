@@ -1,8 +1,9 @@
-#  Data science Dashboard
-My response to a data engineering competition  hosted by [Desa Analytics](https://www.linkedin.com/groups/14527011/)
+# Data science Dashboard
 
+My response to a data engineering competition hosted by [Desa Analytics](https://www.linkedin.com/groups/14527011/)
 
-### TODO List: 
+### TODO List:
+
 - [x] build from a dockerfile
 - [x] run MySQL database + FastAPI server
 - [ ] run data processing and exploration pipeline using demo data
@@ -10,9 +11,12 @@ My response to a data engineering competition  hosted by [Desa Analytics](https:
 - [ ] submit zipped folder containing all competition materials
 
 
+Please feel free to contact me or post your issues/comments.
 
 # I. Configuration file
+
 First of all, please create the configuration file named `.env>` in the project folder using the following template
+
 ```
 PROJECT_NAME=dashboard
 VERSION=v1
@@ -26,7 +30,7 @@ APP_HOST_PORT=8383
 
 #### -----------   WEB-APP  -----------
 WEBAPP_IMG_BUILDER=dashboard-frontend
-WEBAPP_CNTNR_NAME=webapp
+WEBAPP_CNTNR_NAME=webserver
 WEBAPP_SERVER_PORT=8000
 WEBAPP_HOST_PORT=8000
 
@@ -40,10 +44,9 @@ MYSQL_PASSWORD=<password>
 
 ```
 
+# II. Docker setup instructions
 
-# II. Docker setup instructions 
-
-The project can run on Docker using the two  following setups: 
+The project can run on Docker using the two following setups:
 
 1. Setup the Docker environment
 
@@ -51,7 +54,7 @@ The project can run on Docker using the two  following setups:
 $ ./bash/1-build.sh
 ```
 
-2. Run the data Science pipeline  & Dashboard containers
+2. Run the data Science pipeline & Dashboard containers
 
 ```
 $ ./bash/3-run.sh
@@ -73,7 +76,7 @@ $ ./bash/5-stop-servers.sh
 
 Download the competition csv file from [here](https://drive.google.com/drive/folders/1WywM-pVk9C-BrR4kDTcNfuqILQfMYUA5) and save it to the `./data` folder.
 
-
 # Acknowledgement
 
-Thank you contact me ot post your issues/comments in running the code. 
+The main resources used/adapted adapted with/without modifications are cited as follows:
+*  [Free Bootstrap Dashboard template](https://coreui.io/product/free-bootstrap-admin-template/) 

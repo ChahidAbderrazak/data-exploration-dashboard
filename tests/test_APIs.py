@@ -8,21 +8,17 @@ IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
 
 
 # Skip pytest if we are on GITHUB_ACTIONS
-def test_IN_GITHUB():
-    assert 1==1
-
-
-if True:  # not not IN_GITHUB_ACTIONS:
+if IN_GITHUB_ACTIONS:
     pytest.skip(reason="Test doesn't work in Github Actions.", allow_module_level=True)
 ###------------------------------------------------------------------------------------------------
 
 import sys
 
 sys.path
-sys.path.append("webapp")
+sys.path.append("webserver")
 from fastapi.testclient import TestClient
 
-from webapp import app
+from webserver import app
 
 # Instantiate the client
 client = TestClient(app)
