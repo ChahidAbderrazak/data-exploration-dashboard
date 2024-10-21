@@ -11,8 +11,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from mysql.connector import Error
 from pydantic import BaseModel
 
-from lib.configuration import setup_database
-from lib.mysql_utils import SQL_connector
+from utils.configuration import setup_database
+from utils.data_exploration import *
+from utils.mysql_utils import SQL_connector
 
 app = FastAPI()
 
@@ -207,26 +208,50 @@ async def upload_csv(file: UploadFile = File(...)):
     # Check if the uploaded file is a CSV file
     filename, file_extension = os.path.splitext(file.filename)
     print(f"file_extension={file_extension}")
-    if file.content_type != "text/csv" and file_extension != ".xltx":
+    if (
+        file.content_type != "text/csv"
+        and file_extension != ".xltx"
+        and file_extension != ".xlsx"
+    ):
         raise HTTPException(
-            status_code=400, detail="Invalid file type. Please upload a CSV file."
+            status_code=400,
+            detail="Invalid file type. Please upload a CSV/xltx/xlsx file.",
         )
 
     try:
         # Read the file content as a string
         content = await file.read()
+        nrows = 10  # None
 
         # Use StringIO to treat the string as a file-like object for CSV reader
-        if file_extension == ".xltx":
-            print(f' flag1')
-            df = pd.read_excel(io.BytesIO(content))
-            print(f" flag2")
+        if file_extension == ".xltx" or file_extension == ".xlsx":
+            filename_path = io.BytesIO(content)
+            # df = pd.read_excel(io.BytesIO(content), nrows=nrows)
+        elif file_extension == ".csv":
+            filename_path = io.BytesIO(content)
+            # df = pd.read_csv(io.BytesIO(content), nrows=nrows)
         else:
-            print(f" flag3")
-            df = pd.read_csv(io.BytesIO(content))
-            print(f" flag4")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid file extension ({file_extension}). Please upload CSV/xltx/xlsx file types.",
+            )
 
-        # Processing CSV data
+        ###-------------------------------------------------------------
+        # initialize the spark sessions
+        spark = init_spark( MAX_MEMORY='4G')
+
+        # Load the main data set into pyspark data frame
+        spark_df = spark_load_data(spark, filename_path)
+
+        ###-------------------------------------------------------------
+        # run the  data preparation pipeline
+        spark_df, missing_invalid_df = data_preparation_pipeline(spark, spark_df)
+
+        # run the data analysis pipeline
+        monthly_spark_df = data_analysis_pipeline(spark, spark_df)
+
+        ###-------------------------------------------------------------
+        df = monthly_spark_df
         csv_data = df.to_dict(orient="list")
 
         print(f"csv_data={csv_data}")

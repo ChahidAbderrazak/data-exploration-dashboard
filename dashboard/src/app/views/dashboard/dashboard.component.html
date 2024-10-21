@@ -13,14 +13,13 @@
   
   <div *ngIf="csvDetails">
     <h3>CSV File Details</h3>
-    <p><strong>Filename:</strong> {{ csvDetails.filename }}</p>
     <p><strong>topic:</strong> {{ csvDetails.topic }}</p>
+    <p><strong>Filename:</strong> {{ csvDetails.filename }}</p>
     <p><strong>Data:</strong> <br> 
       x={{ csvData.x }} <br> 
       y={{ csvData.y }} 
     </p>
   </div>
-
 </div>
 
 <app-widgets-dropdown />
