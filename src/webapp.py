@@ -4,7 +4,6 @@ import shutil
 from pathlib import Path
 from typing import List
 
-import pandas as pd
 import uvicorn
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -226,35 +225,39 @@ async def upload_csv(file: UploadFile = File(...)):
         # Use StringIO to treat the string as a file-like object for CSV reader
         if file_extension == ".xltx" or file_extension == ".xlsx":
             filename_path = io.BytesIO(content)
-            # df = pd.read_excel(io.BytesIO(content), nrows=nrows)
+            df = pd.read_excel(io.BytesIO(content), nrows=nrows)
         elif file_extension == ".csv":
             filename_path = io.BytesIO(content)
-            # df = pd.read_csv(io.BytesIO(content), nrows=nrows)
+            df = pd.read_csv(io.BytesIO(content), nrows=nrows)
         else:
             raise HTTPException(
                 status_code=400,
                 detail=f"Invalid file extension ({file_extension}). Please upload CSV/xltx/xlsx file types.",
             )
+        # print(f"\n\n - Data analysis in process ...")
+        # ###-------------------------------------------------------------
+        # # initialize the spark sessions
+        # spark = init_spark(MAX_MEMORY="4G")
 
-        ###-------------------------------------------------------------
-        # initialize the spark sessions
-        spark = init_spark( MAX_MEMORY='4G')
+        # # Load the main data set into pyspark data frame
+        # spark_df = spark_load_data(spark, filename_path)
 
-        # Load the main data set into pyspark data frame
-        spark_df = spark_load_data(spark, filename_path)
+        # ###-------------------------------------------------------------
+        # # run the  data preparation pipeline
+        # spark_df, missing_invalid_df = data_preparation_pipeline(spark, spark_df)
 
-        ###-------------------------------------------------------------
-        # run the  data preparation pipeline
-        spark_df, missing_invalid_df = data_preparation_pipeline(spark, spark_df)
+        # # run the data analysis pipeline
+        # monthly_spark_df = data_analysis_pipeline(spark, spark_df)
 
-        # run the data analysis pipeline
-        monthly_spark_df = data_analysis_pipeline(spark, spark_df)
+        # ###-------------------------------------------------------------
+        # df = pd.DataFrame()  # df.to_dict(orient="list")
+        # df["DateByMonth"] = monthly_spark_df["DateByMonth"]
+        # df["IncomeByMonth"] = monthly_spark_df["sum_Purch_Amt"]
+        df["DateByMonth"] = df["x"]
+        df["IncomeByMonth"] = df["y"]
+        data_dict = df.to_dict(orient="list")
 
-        ###-------------------------------------------------------------
-        df = monthly_spark_df
-        csv_data = df.to_dict(orient="list")
-
-        print(f"csv_data={csv_data}")
+        print(f"csv_data={data_dict}")
         metadata = {
             "topic": "raw data",
             "filename": file.filename,
@@ -266,7 +269,7 @@ async def upload_csv(file: UploadFile = File(...)):
         return {
             "status": "success",
             "metadata": metadata,
-            "data": csv_data,
+            "data": data_dict,
         }
 
     except Exception as e:

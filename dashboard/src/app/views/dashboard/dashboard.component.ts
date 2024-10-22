@@ -83,13 +83,15 @@ interface IClient {
     NgFor,
   ],
 })
+
+
 export class DashboardComponent implements OnInit {
   readonly #destroyRef: DestroyRef = inject(DestroyRef);
   readonly #document: Document = inject(DOCUMENT);
   readonly #renderer: Renderer2 = inject(Renderer2);
   readonly #chartsData: DashboardChartsData = inject(DashboardChartsData);
 
-  // uplaod csv file
+  // upload csv file
 
   csvFile: File | null = null;
   csvDetails: any = null;
@@ -115,15 +117,14 @@ export class DashboardComponent implements OnInit {
 
     // Make the API call to upload the CSV file to FastAPI
     axios
-      .post('http://localhost:8080/upload-csv/', formData, {
+      .post('http://127.0.0.1:8080/upload-csv/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       .then((response) => {
         if (response.data.status === 'success') {
-          // Display the CSV details
-           
+          // Update the Dashboard
           this.csvDetails = response.data.metadata;
-          this.csvData= response.data.data;
+          this.csvData = response.data.data;
           this.errorMessage = '';
         } else {
           // Handle error response from the backend

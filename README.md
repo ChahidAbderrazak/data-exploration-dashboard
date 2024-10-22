@@ -12,6 +12,13 @@ My response to a data engineering competition hosted by [Desa Analytics](https:/
 
 
 Please feel free to contact me or post your issues/comments.
+<p align="center">
+<img  src="dashboard/files/dashboard.png" alt="alt text" width="512" >
+ </p>
+<p align="center">
+The developed E-commerce dashboard
+</p>
+
 
 # I. Configuration file
 

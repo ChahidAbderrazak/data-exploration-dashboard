@@ -1,23 +1,32 @@
 <div class="container mt-1">
   <!-- File Upload Section -->
   <div class="input-group">
-    <span class="input-group-addon input-group-prepend"><i class="glyphicon glyphicon-picture"></i></span>
-    <input type="file" class="form-control mb-3" (change)="onFileSelected($event)">
+    <span class="input-group-addon input-group-prepend"
+      ><i class="glyphicon glyphicon-picture"></i
+    ></span>
+    <input
+      type="file"
+      class="form-control mb-3"
+      (change)="onFileSelected($event)"
+    />
     <span class="input-group-btn input-group-append">
-    <button class="btn btn-primary" (click)="uploadCSV()">Upload CSV data</button>
+      <button class="btn btn-primary" (click)="uploadCSV()">
+        Upload CSV data
+      </button>
     </span>
     <p class="text-danger" *ngIf="errorMessage">{{ errorMessage }}</p>
   </div>
 
   <!-- Display CSV Details if Available -->
-  
+
   <div *ngIf="csvDetails">
     <h3>CSV File Details</h3>
     <p><strong>topic:</strong> {{ csvDetails.topic }}</p>
     <p><strong>Filename:</strong> {{ csvDetails.filename }}</p>
-    <p><strong>Data:</strong> <br> 
-      x={{ csvData.x }} <br> 
-      y={{ csvData.y }} 
+    <p>
+      <strong>Data:</strong> <br />
+      x={{ csvData.DateByMonth }} <br />
+      y={{ csvData.IncomeByMonth }}
     </p>
   </div>
 </div>
@@ -114,7 +123,7 @@
     >
       <c-col>
         <div class="text-body-secondary">Purchase</div>
-        <strong>203 Orders (45K$) <br>(-5%)</strong>
+        <strong>203 Orders (45K$) <br />(-5%)</strong>
         <c-progress
           class="mt-2"
           thin
@@ -125,7 +134,7 @@
       </c-col>
       <c-col>
         <div class="text-body-secondary">Customers</div>
-        <div class="fw-semibold text-truncate">24.093 Clients <br>(20%)</div>
+        <div class="fw-semibold text-truncate">24.093 Clients <br />(20%)</div>
         <c-progress
           class="mt-2"
           thin
@@ -136,7 +145,7 @@
       </c-col>
       <c-col>
         <div class="text-body-secondary">New Clients</div>
-        <div class="fw-semibold text-truncate">78.706 Clients <br>(8%)</div>
+        <div class="fw-semibold text-truncate">78.706 Clients <br />(8%)</div>
         <c-progress
           class="mt-2"
           thin
@@ -146,8 +155,8 @@
         />
       </c-col>
       <c-col>
-        <div class="text-body-secondary">Fidel Clients</div>
-        <div class="fw-semibold text-truncate">22.123 Clients <br>(2%)</div>
+        <div class="text-body-secondary">Loyal Clients</div>
+        <div class="fw-semibold text-truncate">22.123 Clients <br />(2%)</div>
         <c-progress
           class="mt-2"
           thin
@@ -158,7 +167,7 @@
       </c-col>
       <c-col class="d-none d-xl-block">
         <div class="text-body-secondary">Satisfaction Rate</div>
-        <div class="fw-semibold text-truncate">Average Rate <br>(40.15%)</div>
+        <div class="fw-semibold text-truncate">Average Rate <br />(40.15%)</div>
         <c-progress class="mt-2" thin value="40" aria-label="Bounce rate" />
       </c-col>
     </c-row>
@@ -180,7 +189,7 @@
                   class="border-start border-start-4 border-start-info py-1 px-3 mb-3"
                 >
                   <div class="text-body-secondary text-truncate small">
-                    Fidel Clients
+                    Loyal Clients
                   </div>
                   <div class="fs-5 fw-semibold">9,123</div>
                 </div>
