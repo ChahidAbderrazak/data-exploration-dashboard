@@ -18,4 +18,5 @@ RUN pip install --upgrade pip
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 EXPOSE $APP_SERVER_PORT
-CMD ["python", "main.py"]
+# CMD ["ls", "-a"]
+# CMD ["uvicorn", "webserver:app", "--host", "0.0.0.0", "--port", "${WEBAPP_SERVER_PORT}"]

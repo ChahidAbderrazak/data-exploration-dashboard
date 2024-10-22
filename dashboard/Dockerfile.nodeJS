@@ -1,0 +1,22 @@
+FROM node:18.19.1
+
+ARG APP_SERVER_PORT=4200
+
+# add user
+RUN adduser --quiet --disabled-password appuser && usermod -a -G audio appuser
+
+# copy the code files
+WORKDIR /app
+COPY . .
+
+# RUN npm install bootstrap@5.3.0 react-bootstrap
+RUN npm install -g npm@10.9.0
+RUN npm install -g @angular/cli
+RUN  npm install axios 
+
+RUN npm install
+RUN npm update
+
+# Run the software
+EXPOSE $APP_SERVER_PORT
+CMD ["npm", "start"]
