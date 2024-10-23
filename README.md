@@ -86,4 +86,5 @@ Download the competition csv file from [here](https://drive.google.com/drive/fol
 # Acknowledgement
 
 The main resources used/adapted adapted with/without modifications are cited as follows:
-*  [Free Bootstrap Dashboard template](https://coreui.io/product/free-bootstrap-admin-template/) 
+*  [Angular chart from API ](https://github.com/desoga10/angular-chart/tree/master) by [desoga10](https://github.com/desoga10)
+*  [Examples of Dashboard components](https://coreui.io/product/free-bootstrap-admin-template/) 

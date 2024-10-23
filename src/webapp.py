@@ -16,13 +16,7 @@ from utils.mysql_utils import SQL_connector
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:8080",
-    "http://0.0.0.0:8080",
-    "http://localhost.example1.com",
-    "https://localhost.example1.com",
-    "http://localhost",
-]
+origins = ["http://localhost:4200", "http://0.0.0.0:4200", "http://127.0.0.1:4200"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -255,7 +249,7 @@ async def upload_csv(file: UploadFile = File(...)):
         # df["IncomeByMonth"] = monthly_spark_df["sum_Purch_Amt"]
         df["DateByMonth"] = df["x"]
         df["IncomeByMonth"] = df["y"]
-        data_dict = df.to_dict(orient="list")
+        data_dict = df.to_dict(orient="records")  # orient="list")
 
         print(f"csv_data={data_dict}")
         metadata = {
