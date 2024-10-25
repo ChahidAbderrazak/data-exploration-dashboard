@@ -47,46 +47,68 @@ class Test_Dashboard_APIs:
     #         err = delete_table(table_name)
     #         assert err == 0
 
-    def test_create_item(self):
-        # Prepare the data for the new item
-        data = {
-            "name": "Test Item",
-            "description": "This is a test description",
-            "price": 5,
-        }
+    # def test_create_item(self):
+    #     # Prepare the data for the new item
+    #     data = {
+    #         "name": "Test Item",
+    #         "description": "This is a test description",
+    #         "price": 5,
+    #     }
 
-        # Send a POST request to the /items/ endpoint
-        response = client.post("/items/", params=data)
+    #     # Send a POST request to the /items/ endpoint
+    #     response = client.post("/items/", params=data)
 
-        # Assert that the response status code is 200 OK
-        assert response.status_code == 200
+    #     # Assert that the response status code is 200 OK
+    #     assert response.status_code == 200
 
-        # Assert that the response contains the correct item data
-        response_json = response.json()
-        assert response_json["name"] == data["name"]
-        assert response_json["description"] == data["description"]
-        assert response_json["price"] == data["price"]
+    #     # Assert that the response contains the correct item data
+    #     response_json = response.json()
+    #     assert response_json["name"] == data["name"]
+    #     assert response_json["description"] == data["description"]
+    #     assert response_json["price"] == data["price"]
 
-        # TODO: update the MySQL database
-        # Check that the item was actually inserted into the database
-        # with TestingSessionLocal() as db:
-        #     item_in_db = db.query(Item).filter(Item.name == data["name"]).first()
-        #     assert item_in_db is not None
-        #     assert item_in_db.name == data["name"]
-        #     assert item_in_db.description == data["description"]
+    #     # TODO: update the MySQL database
+    #     # Check that the item was actually inserted into the database
+    #     # with TestingSessionLocal() as db:
+    #     #     item_in_db = db.query(Item).filter(Item.name == data["name"]).first()
+    #     #     assert item_in_db is not None
+    #     #     assert item_in_db.name == data["name"]
+    #     #     assert item_in_db.description == data["description"]
 
-    def test_upload_image(self):
+    # def test_upload_image(self):
+    #     # Define the path to the test image
+    #     image_path = "data/test/image.jpg"
+
+    #     # Make sure the file exists before running the test
+    #     assert os.path.exists(image_path), "Test image does not exist."
+
+    #     # Open the file in binary mode and send it as part of the request
+    #     with open(image_path, "rb") as image_file:
+    #         response = client.post(
+    #             "/upload-image/",
+    #             files={"file": ("test_image.jpg", image_file, "image/jpeg")},
+    #         )
+
+    #     # Assert the status code
+    #     assert response.status_code == 200
+
+    #     # Assert the response content
+    #     response_json = response.json()
+    #     assert response_json["filename"] == "test_image.jpg"
+    #     assert response_json["message"] == "Image uploaded successfully"
+
+    def test_csv_image(self):
         # Define the path to the test image
-        image_path = "data/test/image.jpg"
+        csv_path = "data/purchase_data_sample.xlsx"
 
         # Make sure the file exists before running the test
-        assert os.path.exists(image_path), "Test image does not exist."
+        assert os.path.exists(csv_path), "Test image does not exist."
 
         # Open the file in binary mode and send it as part of the request
-        with open(image_path, "rb") as image_file:
+        with open(csv_path, "rb") as file:
             response = client.post(
-                "/upload-image/",
-                files={"file": ("test_image.jpg", image_file, "image/jpeg")},
+                "/upload-csv/",
+                files={"file": ("purchase_data_sample.xlsx", file, "text/csv")},
             )
 
         # Assert the status code

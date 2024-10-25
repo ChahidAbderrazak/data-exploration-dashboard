@@ -6,7 +6,7 @@ import {
   ChartType,
   PluginOptionsByType,
   ScaleOptions,
-  TooltipLabelStyle
+  TooltipLabelStyle,
 } from 'chart.js';
 import { DeepPartial } from 'chart.js/dist/types/utils';
 import { getStyle, hexToRgba } from '@coreui/utils';
@@ -18,17 +18,20 @@ export interface IChartProps {
   colors?: any;
   type: ChartType;
   legend?: any;
-
   [propName: string]: any;
 }
 
 @Injectable({
-  providedIn: 'any'
+  providedIn: 'any',
 })
 export class DashboardChartsData {
   constructor() {
     this.initMainChart();
   }
+  data_month: any = null;
+  labels_month: any = null;
+  // this.data_month=
+  // this.labels_month=
 
   public mainChart: IChartProps = { type: 'line' };
 
@@ -69,7 +72,7 @@ export class DashboardChartsData {
         '2021',
         '2022',
         '2023',
-        '2024'
+        '2024',
       ];
     } else if (period === 'Month') {
       labels = [
@@ -107,13 +110,13 @@ export class DashboardChartsData {
         borderColor: brandInfo,
         pointHoverBackgroundColor: brandInfo,
         borderWidth: 2,
-        fill: true
+        fill: true,
       },
       {
         // brandSuccess
         backgroundColor: 'transparent',
         borderColor: brandSuccess || '#4dbd74',
-        pointHoverBackgroundColor: '#fff'
+        pointHoverBackgroundColor: '#fff',
       },
       {
         // brandDanger
@@ -121,37 +124,40 @@ export class DashboardChartsData {
         borderColor: brandDanger || '#f86c6b',
         pointHoverBackgroundColor: brandDanger,
         borderWidth: 1,
-        borderDash: [8, 5]
-      }
+        borderDash: [8, 5],
+      },
     ];
 
     const datasets: ChartDataset[] = [
       {
         data: this.mainChart['Data1'],
         label: 'Current',
-        ...colors[0]
+        ...colors[0],
       },
-      {
-        data: this.mainChart['Data2'],
-        label: 'Previous',
-        ...colors[1]
-      },
-      {
-        data: this.mainChart['Data3'],
-        label: 'BEP',
-        ...colors[2]
-      }
+      // {
+      //   data: this.mainChart['Data2'],
+      //   label: 'Previous',
+      //   ...colors[1],
+      // },
+      // {
+      //   data: this.mainChart['Data3'],
+      //   label: 'BEP',
+      //   ...colors[2],
+      // },
     ];
 
     const plugins: DeepPartial<PluginOptionsByType<any>> = {
       legend: {
-        display: false
+        display: false,
       },
       tooltip: {
         callbacks: {
-          labelColor: (context) => ({ backgroundColor: context.dataset.borderColor } as TooltipLabelStyle)
-        }
-      }
+          labelColor: (context) =>
+            ({
+              backgroundColor: context.dataset.borderColor,
+            } as TooltipLabelStyle),
+        },
+      },
     };
 
     const scales = this.getScales();
@@ -162,22 +168,22 @@ export class DashboardChartsData {
       scales,
       elements: {
         line: {
-          tension: 0.4
+          tension: 0.4,
         },
         point: {
           radius: 0,
           hitRadius: 10,
           hoverRadius: 4,
-          hoverBorderWidth: 3
-        }
-      }
+          hoverBorderWidth: 3,
+        },
+      },
     };
 
     this.mainChart.type = 'line';
     this.mainChart.options = options;
     this.mainChart.data = {
       datasets,
-      labels
+      labels,
     };
   }
 
@@ -189,27 +195,27 @@ export class DashboardChartsData {
       x: {
         grid: {
           color: colorBorderTranslucent,
-          drawOnChartArea: false
+          drawOnChartArea: false,
         },
         ticks: {
-          color: colorBody
-        }
+          color: colorBody,
+        },
       },
       y: {
         border: {
-          color: colorBorderTranslucent
+          color: colorBorderTranslucent,
         },
         grid: {
-          color: colorBorderTranslucent
+          color: colorBorderTranslucent,
         },
         max: 250,
         beginAtZero: true,
         ticks: {
           color: colorBody,
           maxTicksLimit: 5,
-          stepSize: Math.ceil(250 / 5)
-        }
-      }
+          stepSize: Math.ceil(250 / 5),
+        },
+      },
     };
     return scales;
   }

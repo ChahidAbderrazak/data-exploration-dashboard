@@ -12,7 +12,8 @@ import {
 import { NgIf, NgFor } from '@angular/common';
 
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { ChartOptions } from 'chart.js';
+import { Chart, registerables, ChartOptions, ChartType } from 'chart.js';
+
 import {
   AvatarComponent,
   ButtonDirective,
@@ -83,8 +84,6 @@ interface IClient {
     NgFor,
   ],
 })
-
-
 export class DashboardComponent implements OnInit {
   readonly #destroyRef: DestroyRef = inject(DestroyRef);
   readonly #document: Document = inject(DOCUMENT);
@@ -94,11 +93,21 @@ export class DashboardComponent implements OnInit {
   // upload csv file
 
   csvFile: File | null = null;
-  csvDetails: any = null;
+  UseCaseDetails: any = null;
   csvData: any = null;
+  val: any = null;
+  type_graph: ChartType = 'bar';
   errorMessage: string = '';
+  chartData: any = null;
+  chart_purchase_activity: Chart | null = null;
+  server_ip: string = 'http://0.0.0.0:8080';
+  //  API data format
+  DateByMonth: any = null;
+  IncomeByMonth: any = null;
 
-  constructor() {}
+  constructor() {
+    Chart.register(...registerables);
+  }
 
   // Handle file selection event
   onFileSelected(event: any): void {
@@ -123,102 +132,112 @@ export class DashboardComponent implements OnInit {
       .then((response) => {
         if (response.data.status === 'success') {
           // Update the Dashboard
-          this.csvDetails = response.data.metadata;
-          this.csvData = response.data.data;
-          this.errorMessage = '';
+          this.UseCaseDetails = response.data.metadata;
+          this.chartData = response.data;
+          this.val = this.UseCaseDetails.num_rows;
+          console.log('chartData=' + this.chartData);
+          this.DateByMonth = this.chartData.data.map(
+            (row: any) => row['DateByMonth']
+          );
+          this.IncomeByMonth = this.chartData.data.map(
+            (row: any) => row['IncomeByMonth']
+          );
+
+          //  Update the dashboard data
+          this.update_dashboard_data();
+
+          //  Create the chart using Chart.js
+          this.create_Chart_purchase_activity();
+
+          //  report error if any
+          this.errorMessage = 'Done!';
         } else {
           // Handle error response from the backend
-          this.errorMessage = 'Error: ' + response.data.message;
+          this.errorMessage = ' Error: ' + response.data.message;
         }
       })
       .catch((error) => {
-        console.error('Error uploading CSV:', error);
-        this.errorMessage = 'Failed to upload CSV file.';
+        console.error(' Error uploading CSV:', error);
+        this.errorMessage = ' Failed to upload CSV file.';
       });
+  }
+  // Function to update dashboard data
+  update_dashboard_data(): void {
+    console.log('chart labels'); // + this.mainChart.data.labels);
+  }
+  // Function to create a chart using Chart.js
+  create_Chart_purchase_activity(): void {
+    if (this.chart_purchase_activity) {
+      this.chart_purchase_activity.destroy(); // Destroy the existing chart if it exists
+    }
+    this.chart_purchase_activity = new Chart('canvas', {
+      type: 'line', // Can be 'bar', 'line', etc.
+      data: {
+        labels: this.DateByMonth,
+        datasets: [
+          {
+            label: 'test ',
+            data: this.IncomeByMonth,
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
   }
 
   public clients: IClient[] = [
     {
-      name: 'Yiorgos Avraamu',
-      state: 'New',
-      registered: 'Jan 1, 2021',
+      name: 'Katelyn Clark',
+      state: '',
+      registered: 'ID= 48382',
       country: 'Us',
-      usage: 50,
-      period: 'Jun 11, 2021 - Jul 10, 2021',
+      usage: 0.01,
+      period: '15 transactions',
       payment: 'Mastercard',
-      activity: '10 sec ago',
+      activity: '2023-04-01 13:02:11',
       avatar: './assets/images/avatars/1.jpg',
       status: 'success',
       color: 'success',
     },
     {
-      name: 'Avram Tarasios',
+      name: 'Lori Taylor',
       state: 'Recurring ',
-      registered: 'Jan 1, 2021',
+      registered: 'ID= 6347',
       country: 'Ie',
-      usage: 10,
-      period: 'Jun 11, 2021 - Jul 10, 2021',
-      payment: 'Visa',
-      activity: '5 minutes ago',
+      usage: 0.01,
+      period: '14 transactions',
+      payment: 'Mastercard',
+      activity: '2022-08-26 16:18:07',
       avatar: './assets/images/avatars/2.jpg',
-      status: 'danger',
+      status: 'success',
       color: 'info',
     },
     {
-      name: 'Quintin Ed',
-      state: 'New',
-      registered: 'Jan 1, 2021',
+      name: 'Roberto Rogers',
+      state: 'Recurring ',
+      registered: 'ID= 35294',
       country: 'Ma',
-      usage: 74,
-      period: 'Jun 11, 2021 - Jul 10, 2021',
-      payment: 'Stripe',
-      activity: '1 hour ago',
+      usage: 0.01,
+      period: '14 transactions',
+      payment: 'Mastercard',
+      activity: '2023-08-24 07:18:33',
       avatar: './assets/images/avatars/3.jpg',
-      status: 'warning',
-      color: 'warning',
-    },
-    {
-      name: 'Enéas Kwadwo',
-      state: 'Sleep',
-      registered: 'Jan 1, 2021',
-      country: 'Es',
-      usage: 98,
-      period: 'Jun 11, 2021 - Jul 10, 2021',
-      payment: 'Paypal',
-      activity: 'Last month',
-      avatar: './assets/images/avatars/4.jpg',
-      status: 'secondary',
-      color: 'danger',
-    },
-    {
-      name: 'Agapetus Tadeáš',
-      state: 'New',
-      registered: 'Jan 1, 2021',
-      country: 'Es',
-      usage: 22,
-      period: 'Jun 11, 2021 - Jul 10, 2021',
-      payment: 'ApplePay',
-      activity: 'Last week',
-      avatar: './assets/images/avatars/5.jpg',
       status: 'success',
-      color: 'primary',
+      color: 'info',
     },
-    {
-      name: 'Friderik Dávid',
-      state: 'New',
-      registered: 'Jan 1, 2021',
-      country: 'Co',
-      usage: 43,
-      period: 'Jun 11, 2021 - Jul 10, 2021',
-      payment: 'Amex',
-      activity: 'Yesterday',
-      avatar: './assets/images/avatars/6.jpg',
-      status: 'info',
-      color: 'dark',
-    },
+    
   ];
 
-  public mainChart: IChartProps = { type: 'line' };
+  public mainChart: IChartProps = { type: this.type_graph };
   public mainChartRef: WritableSignal<any> = signal(undefined);
   #mainChartRefEffect = effect(() => {
     if (this.mainChartRef()) {
@@ -242,6 +261,7 @@ export class DashboardComponent implements OnInit {
   setTrafficPeriod(value: string): void {
     this.trafficRadioGroup.setValue({ trafficRadio: value });
     this.#chartsData.initMainChart(value);
+    console.log('info: new this.csvData=' + this.csvData);
     this.initCharts();
   }
 

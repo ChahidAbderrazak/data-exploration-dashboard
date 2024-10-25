@@ -1,6 +1,6 @@
-<div class="container mt-1">
+<!-- <div class="container mt-1"> -->
   <!-- File Upload Section -->
-  <div class="input-group">
+  <!-- <div class="input-group">
     <span class="input-group-addon input-group-prepend"
       ><i class="glyphicon glyphicon-picture"></i
     ></span>
@@ -15,21 +15,35 @@
       </button>
     </span>
     <p class="text-danger" *ngIf="errorMessage">{{ errorMessage }}</p>
-  </div>
+  </div> -->
 
   <!-- Display CSV Details if Available -->
 
-  <div *ngIf="csvDetails">
+  <!-- <div *ngIf="UseCaseDetails">
     <h3>CSV File Details</h3>
-    <p><strong>topic:</strong> {{ csvDetails.topic }}</p>
-    <p><strong>Filename:</strong> {{ csvDetails.filename }}</p>
+    <p><strong>topic:</strong> {{ UseCaseDetails.topic }}</p>
+    <p><strong>Filename:</strong> {{ UseCaseDetails.filename }}</p>
     <p>
       <strong>Data:</strong> <br />
-      x={{ csvData.DateByMonth }} <br />
-      y={{ csvData.IncomeByMonth }}
+      x={{ chartData.DateByMonth }} <br />
+      y={{ chartData.IncomeByMonth }}
     </p>
-  </div>
-</div>
+  </div> -->
+
+<!-- </div> -->
+
+<!-- Chart Section -->
+<!-- <div>
+  <h2>Chart</h2>
+  <canvas id="canvas">{{ chart_purchase_activity }}</canvas>
+</div> -->
+
+  <!-- <div>
+    <h3>mainChart.data</h3>
+    <p><strong></strong> {{ mainChart.type }}</p>
+    
+  </div> -->
+
 
 <app-widgets-dropdown />
 
@@ -121,7 +135,7 @@
       [xs]="1"
       [gutter]="4"
     >
-      <c-col>
+      <!-- <c-col>
         <div class="text-body-secondary">Purchase</div>
         <strong>203 Orders (45K$) <br />(-5%)</strong>
         <c-progress
@@ -169,7 +183,9 @@
         <div class="text-body-secondary">Satisfaction Rate</div>
         <div class="fw-semibold text-truncate">Average Rate <br />(40.15%)</div>
         <c-progress class="mt-2" thin value="40" aria-label="Bounce rate" />
-      </c-col>
+      </c-col> -->
+
+
     </c-row>
   </c-card-footer>
 </c-card>
@@ -182,191 +198,14 @@
       <c-card-header>Sales {{ "&" }} Insights</c-card-header>
       <c-card-body>
         <c-row>
-          <c-col md="6" xl="6" xs="12">
-            <c-row>
-              <c-col xs="6">
-                <div
-                  class="border-start border-start-4 border-start-info py-1 px-3 mb-3"
-                >
-                  <div class="text-body-secondary text-truncate small">
-                    Loyal Clients
-                  </div>
-                  <div class="fs-5 fw-semibold">9,123</div>
-                </div>
-              </c-col>
-              <c-col xs="6">
-                <div
-                  class="border-start border-start-4 border-start-danger py-1 px-3 mb-3"
-                >
-                  <div class="text-body-secondary text-truncate small">
-                    Recurring Clients
-                  </div>
-                  <div class="fs-5 fw-semibold">22,643</div>
-                </div>
-              </c-col>
-            </c-row>
-            <hr class="mt-0" />
-            <div class="progress-group mb-4">
-              <div class="progress-group-prepend">
-                <span class="text-body-secondary small">Monday</span>
-              </div>
-              <div class="progress-group-bars">
-                <c-progress
-                  thin
-                  color="info"
-                  value="34"
-                  aria-label="Monday new clients"
-                />
-                <c-progress
-                  thin
-                  color="danger"
-                  value="78"
-                  aria-label="Monday recurring clients"
-                />
-              </div>
-            </div>
-            <div class="progress-group mb-4">
-              <div class="progress-group-prepend">
-                <span class="text-body-secondary small">Tuesday</span>
-              </div>
-              <div class="progress-group-bars">
-                <c-progress
-                  thin
-                  color="info"
-                  value="56"
-                  aria-label="Tuesday new clients"
-                />
-                <c-progress
-                  thin
-                  color="danger"
-                  value="94"
-                  aria-label="Tuesday recurring clients"
-                />
-              </div>
-            </div>
-            <div class="progress-group mb-4">
-              <div class="progress-group-prepend">
-                <span class="text-body-secondary small">Wednesday</span>
-              </div>
-              <div class="progress-group-bars">
-                <c-progress
-                  thin
-                  color="info"
-                  value="12"
-                  aria-label="Wednesday new clients"
-                />
-                <c-progress
-                  thin
-                  color="danger"
-                  value="67"
-                  aria-label="Wednesday recurring clients"
-                />
-              </div>
-            </div>
-            <div class="progress-group mb-4">
-              <div class="progress-group-prepend">
-                <span class="text-body-secondary small">Thursday</span>
-              </div>
-              <div class="progress-group-bars">
-                <c-progress
-                  thin
-                  color="info"
-                  value="43"
-                  aria-label="Thursday new clients"
-                />
-                <c-progress
-                  thin
-                  color="danger"
-                  value="91"
-                  aria-label="Thursday recurring clients"
-                />
-              </div>
-            </div>
-            <div class="progress-group mb-4">
-              <div class="progress-group-prepend">
-                <span class="text-body-secondary small">Friday</span>
-              </div>
-              <div class="progress-group-bars">
-                <c-progress
-                  thin
-                  color="info"
-                  value="22"
-                  aria-label="Friday new clients"
-                />
-                <c-progress
-                  thin
-                  color="danger"
-                  value="73"
-                  aria-label="Friday recurring clients"
-                />
-              </div>
-            </div>
-            <div class="progress-group mb-4">
-              <div class="progress-group-prepend">
-                <span class="text-body-secondary small">Saturday</span>
-              </div>
-              <div class="progress-group-bars">
-                <c-progress
-                  thin
-                  color="info"
-                  value="53"
-                  aria-label="Saturday new clients"
-                />
-                <c-progress
-                  thin
-                  color="danger"
-                  value="82"
-                  aria-label="Saturday recurring clients"
-                />
-              </div>
-            </div>
-            <div class="progress-group mb-4">
-              <div class="progress-group-prepend">
-                <span class="text-body-secondary small">Sunday</span>
-              </div>
-              <div class="progress-group-bars">
-                <c-progress
-                  thin
-                  color="info"
-                  value="9"
-                  aria-label="Sunday new clients"
-                />
-                <c-progress
-                  thin
-                  color="danger"
-                  value="69"
-                  aria-label="Sunday recurring clients"
-                />
-              </div>
-            </div>
-            <div
-              class="legend text-center d-none d-md-block"
-              ngPreserveWhitespaces
-            >
-              <small>
-                <sup>
-                  <span class="badge badge-pill badge-sm bg-info">&nbsp;</span>
-                </sup>
-                <span>New clients</span>
-                &nbsp;&nbsp;
-                <sup>
-                  <span class="badge badge-pill badge-sm bg-danger"
-                    >&nbsp;</span
-                  >
-                </sup>
-                <span>Recurring clients</span>
-              </small>
-            </div>
-          </c-col>
-
-          <c-col md="6" xl="6" xs="12">
+                    <c-col md="6" xl="6" xs="12">
             <c-row>
               <c-col xs="6">
                 <div
                   class="border-start border-start-4 border-start-warning py-1 px-3 mb-3"
                 >
                   <div class="text-body-secondary text-truncate small">
-                    New Clients
+                    Home
                   </div>
                   <div class="fs-5 fw-semibold">78,623</div>
                 </div>
@@ -376,9 +215,9 @@
                   class="border-start border-start-4 border-start-success py-1 px-3 mb-3"
                 >
                   <div class="text-body-secondary text-truncate small">
-                    Organic
+                    Clothing
                   </div>
-                  <div class="fs-5 fw-semibold">49,123</div>
+                  <div class="fs-5 fw-semibold">78,623</div>
                 </div>
               </c-col>
             </c-row>
@@ -389,6 +228,36 @@
               <div class="progress-group-header">
                 <svg cIcon class="icon icon-lg me-2" name="cilUser"></svg>
                 <span>Male</span>
+                <span class="ms-auto font-semibold">50.33%</span>
+              </div>
+              <div class="progress-group-bars">
+                <c-progress
+                  thin
+                  color="warning"
+                  value="50.33"
+                  aria-label="Male clients"
+                />
+              </div>
+            </div>
+            <div class="progress-group mb-5">
+              <div class="progress-group-header">
+                <svg cIcon class="icon icon-lg me-2" name="cilUserFemale"></svg>
+                <span>Female</span>
+                <span class="ms-auto font-semibold">49.67%</span>
+              </div>
+              <div class="progress-group-bars">
+                <c-progress
+                  thin
+                  color="success"
+                  value="49.67"
+                  aria-label="Female clients"
+                />
+              </div>
+            </div>
+            <!-- <div class="progress-group mb-4">
+              <div class="progress-group-header">
+                <svg cIcon class="icon icon-lg me-2" name="cilUser"></svg> 
+                <span>Return</span>
                 <span class="ms-auto font-semibold">43%</span>
               </div>
               <div class="progress-group-bars">
@@ -402,21 +271,121 @@
             </div>
             <div class="progress-group mb-5">
               <div class="progress-group-header">
-                <svg cIcon class="icon icon-lg me-2" name="cilUserFemale"></svg>
-                <span>Female</span>
+                 <svg cIcon class="icon icon-lg me-2" name="cilUserFemale"></svg> 
+                <span>Churns</span>
                 <span class="ms-auto font-semibold">37%</span>
               </div>
               <div class="progress-group-bars">
                 <c-progress
                   thin
-                  color="warning"
+                  color="success"
                   value="37"
-                  aria-label="Feale clients"
+                  aria-label="Female clients"
+                />
+              </div>
+            </div> -->
+
+            <div class="divider d-flex justify-content-center">
+              <button
+                cButton
+                class="text-muted btn-link"
+                color="transparent"
+                size="sm"
+                type="button"
+                aria-label="Options"
+              >
+                <svg cIcon name="cil-options"></svg>
+              </button>
+            </div>
+          </c-col>
+
+          <c-col md="6" xl="6" xs="12">
+            <c-row>
+              <c-col xs="6">
+                <div
+                  class="border-start border-start-4 border-start-warning py-1 px-3 mb-3"
+                >
+                  <div class="text-body-secondary text-truncate small">
+                    Books
+                  </div>
+                  <div class="fs-5 fw-semibold">78,623</div>
+                </div>
+              </c-col>
+              <c-col xs="6">
+                <div
+                  class="border-start border-start-4 border-start-success py-1 px-3 mb-3"
+                >
+                  <div class="text-body-secondary text-truncate small">
+                    Electronics
+                  </div>
+                  <div class="fs-5 fw-semibold">49,123</div>
+                </div>
+              </c-col>
+            </c-row>
+
+            <hr class="mt-0" />
+
+            <div class="progress-group mb-4">
+              <div class="progress-group-header">
+                <!-- <svg cIcon class="icon icon-lg me-2" name="cilUser"></svg> -->
+                <span>Books</span>
+                <span class="ms-auto font-semibold">24.9%</span>
+              </div>
+              <div class="progress-group-bars">
+                <c-progress
+                  thin
+                  color="success"
+                  value="24.9"
+                  aria-label="Male clients"
                 />
               </div>
             </div>
-
-            <div class="progress-group">
+            <div class="progress-group mb-5">
+              <div class="progress-group-header">
+                <!-- <svg cIcon class="icon icon-lg me-2" name="cilUserFemale"></svg> -->
+                <span>Electronics</span>
+                <span class="ms-auto font-semibold">25.1%</span>
+              </div>
+              <div class="progress-group-bars">
+                <c-progress
+                  thin
+                  color="warning"
+                  value="25.1"
+                  aria-label="Female clients"
+                />
+              </div>
+            </div>
+            <div class="progress-group mb-4">
+              <div class="progress-group-header">
+                <!-- <svg cIcon class="icon icon-lg me-2" name="cilUser"></svg> -->
+                <span>Home</span>
+                <span class="ms-auto font-semibold">25%</span>
+              </div>
+              <div class="progress-group-bars">
+                <c-progress
+                  thin
+                  color="success"
+                  value="25"
+                  aria-label="Male clients"
+                />
+              </div>
+            </div>
+            <div class="progress-group mb-5">
+              <div class="progress-group-header">
+                <!-- <svg cIcon class="icon icon-lg me-2" name="cilUserFemale"></svg> -->
+                <span>Clothing</span>
+                <span class="ms-auto font-semibold">25%</span>
+              </div>
+              <div class="progress-group-bars">
+                <c-progress
+                  thin
+                  color="warning"
+                  value="25"
+                  aria-label="Female clients"
+                />
+              </div>
+            </div>
+            <!-- <div class="progress-group">
               <div class="progress-group-header">
                 <svg cIcon class="icon icon-lg me-2" name="cibGoogle"></svg>
                 <span>Organic Search</span>
@@ -483,7 +452,8 @@
                   aria-label="LinkedIn"
                 />
               </div>
-            </div>
+            </div> -->
+
             <div class="divider d-flex justify-content-center">
               <button
                 cButton

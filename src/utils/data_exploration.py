@@ -1,17 +1,14 @@
 # Import other modules not related to PySpark
 import os
-import sys
-import pandas as pd
-from pandas import DataFrame
-import numpy as np
+from datetime import *
+
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
-import matplotlib
-from mpl_toolkits.mplot3d import Axes3D
-import math
+
+import numpy as np
+import pandas as pd
 from IPython.core.interactiveshell import InteractiveShell
-from datetime import *
-import statistics as stats
 
 matplotlib.rcParams["figure.dpi"] = 100
 InteractiveShell.ast_node_interpurchase = "all"
@@ -19,29 +16,11 @@ InteractiveShell.ast_node_interpurchase = "all"
 
 # Import PySpark related modules
 import pyspark
-from pyspark.rdd import RDD
-from pyspark.sql import Row
-from pyspark.sql import DataFrame
-from pyspark.sql import SparkSession
-from pyspark.sql import SQLContext
-from pyspark.sql import functions
-from pyspark.sql.functions import (
-    lit,
-    desc,
-    col,
-    size,
-    array_contains,
-    isnan,
-    udf,
-    hour,
-    array_min,
-    array_max,
-    countDistinct,
-)
-
 import pyspark.sql.functions as f
-
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import array_contains, col
 from pyspark.sql.types import *
+
 
 def init_spark(MAX_MEMORY="15G"):
 
@@ -68,16 +47,16 @@ def spark_load_data(spark, filename_path):
     spark_df = spark_df.orderBy("Date")
 
     # displays
-    spark_df.describe().toPandas()
+    # spark_df.toPandas().describe()
     print(f"There are total {spark_df.count()} rows")
-    print(spark_df.limit(5).toPandas())
+    print("Raw data :", spark_df.limit(5).toPandas())
     return spark_df
 
 
 def save_sample_data(df, filepath, nrows=100):
-    '''
+    """
     extract random sample data of nrows sample in <filename_path>
-    '''
+    """
     filename, file_extension = os.path.splitext(filepath)
     # extract random sample data of nrows samples
     df_sample = df.sample(n=nrows).reset_index().drop(columns="index")
@@ -117,14 +96,22 @@ def categorize_columns(spark_df, verbose=1):
             numeric_columns.append(col_name)
         else:
             unkown_columns.append((col_name, data_type))
-    if verbose>0:
-        print(f" timestamp_columns [size= {len(timestamp_columns)}] = {timestamp_columns}")
+    if verbose > 0:
+        print(
+            f" timestamp_columns [size= {len(timestamp_columns)}] = {timestamp_columns}"
+        )
         print(f" string_columns [size= {len(string_columns)}] = {string_columns}")
         print(f" numeric_columns [size= {len(numeric_columns)}] = {numeric_columns}")
         print(f" array_columns [size= {len(array_columns)}] = {array_columns}")
         print(f" unkown_columns [size= {len(unkown_columns)}] = {unkown_columns}")
 
-    return string_columns, numeric_columns, array_columns, timestamp_columns, unkown_columns
+    return (
+        string_columns,
+        numeric_columns,
+        array_columns,
+        timestamp_columns,
+        unkown_columns,
+    )
 
 
 def count_missing_invalid_values(spark_df):
@@ -177,7 +164,7 @@ def count_missing_invalid_values(spark_df):
     return missing_invalid_df
 
 
-def plot_columns(df, x_column, y_columns, subplot=True):
+def plot_columns(df, x_column, y_columns, title="", subplot=True):
     import matplotlib.pyplot as plt
 
     x_ts = [val[x_column] for val in df.select(x_column).collect()]
@@ -197,10 +184,13 @@ def plot_columns(df, x_column, y_columns, subplot=True):
     plt.xlabel(x_column)
     plt.legend()  # loc="upper left")
     #  set the title
+    if title == "":
+        title = "Explore time-series variation"
+
     if subplot:
-        fig.suptitle("Explore the dataframe time series", fontsize=14)
+        fig.suptitle(title, fontsize=14)
     else:
-        plt.title("Explore the dataframe time series")
+        plt.title(title)
     # show the canvas
     plt.show()
 
@@ -211,39 +201,52 @@ def generate_explode(nb_categories):
 
 
 def data_preparation_pipeline(spark, spark_df):
+    # Replace 0 for null on only population column
+    spark_df = spark_df.na.fill(value=0, subset=["Returns"])
+
     # remove the invalid value (negative price, quantity, others)
-    nb_invalid_values = spark_df.select("*")\
-            .where((col("Price")<0) | \
-                (col("Quantity")<0) | \
-                (col("Purch_Amt")<0) | \
-                (col("Returns")<0) | \
-                (col("Churn")<0)  ).count()
+    nb_invalid_values = (
+        spark_df.select("*")
+        .where(
+            (col("Price") < 0)
+            | (col("Quantity") < 0)
+            | (col("Purch_Amt") < 0)
+            | (col("Returns") < 0)
+            | (col("Churn") < 0)
+        )
+        .count()
+    )
     total_nb_samples = spark_df.count()
 
-    if nb_invalid_values>=0:
+    if nb_invalid_values >= 0:
         print(
             f"- {nb_invalid_values}/{total_nb_samples} invalid (negative) values found!!. \
                 \n {100*nb_invalid_values/total_nb_samples}% samples were removed from the dataset "
         )
-        spark_df = spark_df.select("*")\
-                            .where((col("Price")>=0) & \
-                                (col("Quantity")>=0) & \
-                                (col("Purch_Amt")>=0) & \
-                                (col("Returns")>=0) & \
-                                (col("Churn")>=0)  )
+        spark_df = spark_df.select("*").where(
+            (col("Price") >= 0)
+            & (col("Quantity") >= 0)
+            & (col("Purch_Amt") >= 0)
+            & (col("Returns") >= 0)
+            & (col("Churn") >= 0)
+        )
 
     # remove the invalid computation(s) of Purch_Amt=Price*Quantity
-    nb_invalid_Purch_Amt_values = spark_df.select("*")\
-            .where((col("Price")*col("Quantity")!=col("Purch_Amt")) ).count()
+    nb_invalid_Purch_Amt_values = (
+        spark_df.select("*")
+        .where((col("Price") * col("Quantity") != col("Purch_Amt")))
+        .count()
+    )
     total_nb_samples = spark_df.count()
 
-    if nb_invalid_Purch_Amt_values>=0:
+    if nb_invalid_Purch_Amt_values >= 0:
         print(
             f"- {nb_invalid_Purch_Amt_values}/{total_nb_samples} invalid computation(s) of Purch_Amt=Price*Quantity are found!!. \
                 \n {100*nb_invalid_Purch_Amt_values/total_nb_samples}% samples were removed from the dataset "
         )
-        spark_df = spark_df.select("*")\
-                            .where((col("Price")*col("Quantity")==col("Purch_Amt")) )
+        spark_df = spark_df.select("*").where(
+            (col("Price") * col("Quantity") == col("Purch_Amt"))
+        )
 
     # count the missing values
     missing_invalid_df = count_missing_invalid_values(spark_df)
@@ -251,24 +254,368 @@ def data_preparation_pipeline(spark, spark_df):
     return spark_df, missing_invalid_df
 
 
-def data_analysis_pipeline(spark, spark_df):
+### rank ales by product category
+def rank_sales_by_product_category(spark_df, topN=5):
+    ranked_product_category_spark_df = (
+        spark_df.select(spark_df.Category, spark_df.Cust_ID, spark_df.Date)
+        .groupBy(spark_df.Category)
+        .count()
+        .orderBy("count", ascending=False)
+    )
 
-    # calculate sum of sales by month
-    monthly_spark_df=spark_df.groupBy(f.year("Date").alias("year"), f.month("Date").alias("month"))\
-                             .agg(f.sum("Purch_Amt").alias("sum_Purch_Amt"),
-                                f.avg("Purch_Amt").alias("avg_Purch_Amt"),
-                                f.avg("Price").alias("avg_Price"),
-                                f.avg("Quantity").alias("avg_Quantity"),
-                                f.sum("Quantity").alias("sum_Quantity"),
-                                f.avg("Age").alias("avg_Age"),
-                                f.sum("Returns").alias("sum_Returns"),
-                                f.sum("Churn").alias("sum_Churn")
-                                )
-    monthly_spark_df=monthly_spark_df.select(*[f.round(c, 2).alias(c) for c in monthly_spark_df.columns])
-    monthly_spark_df = monthly_spark_df.withColumn("DateByMonth", f.expr("make_date(year, month, 1)")).orderBy("DateByMonth")
-    monthly_spark_df.show()
+    # Top 5 purchase types
+    ranked_product_category_df = ranked_product_category_spark_df.limit(topN).toPandas()
+    # Rename column name : "count" --> Clients count
+    ranked_product_category_df.rename(columns={"count": "Clients count"}, inplace=True)
 
-    return monthly_spark_df.toPandas()
+    # Calculate the total users, we will this result to compute percentage later
+    total_categories_clients = (
+        ranked_product_category_spark_df.groupBy().sum().collect()[0][0]
+    )
+
+    # Compute the percentage of top 5 purchase type / total users
+    ranked_product_category_df["percentage"] = (
+        ranked_product_category_df["Clients count"] / total_categories_clients * 100
+    )
+
+    return total_categories_clients, ranked_product_category_df
+
+
+### calculate sum of sales by month
+def daily_income_stats(spark_df):
+    transactions_spark_df = spark_df.groupBy(
+        f.year("Date").alias("year"),
+        f.month("Date").alias("month"),
+        f.day("Date").alias("day"),
+    ).agg(
+        f.sum("Cust_ID").alias("sum_Cust_ID"),
+        f.sum("Purch_Amt").alias("sum_Purch_Amt"),
+        f.avg("Purch_Amt").alias("avg_Purch_Amt"),
+        f.avg("Price").alias("avg_Price"),
+        f.avg("Quantity").alias("avg_Quantity"),
+        f.sum("Quantity").alias("sum_Quantity"),
+        f.avg("Age").alias("avg_Age"),
+        f.sum("Returns").alias("sum_Returns"),
+        f.sum("Churn").alias("sum_Churn"),
+    )
+    transactions_spark_df = transactions_spark_df.select(
+        *[f.round(c, 2).alias(c) for c in transactions_spark_df.columns]
+    )
+    transactions_spark_df = transactions_spark_df.withColumn(
+        "DateByPeriod", f.expr("make_date(year, month, day)")
+    ).orderBy("DateByPeriod")
+
+    return transactions_spark_df
+
+
+def monthly_income_stats(spark_df):
+    transactions_spark_df = spark_df.groupBy(
+        f.year("Date").alias("year"), f.month("Date").alias("month")
+    ).agg(
+        f.sum("Cust_ID").alias("sum_Cust_ID"),
+        f.sum("Purch_Amt").alias("sum_Purch_Amt"),
+        f.avg("Purch_Amt").alias("avg_Purch_Amt"),
+        f.avg("Price").alias("avg_Price"),
+        f.avg("Quantity").alias("avg_Quantity"),
+        f.sum("Quantity").alias("sum_Quantity"),
+        f.avg("Age").alias("avg_Age"),
+        f.sum("Returns").alias("sum_Returns"),
+        f.sum("Churn").alias("sum_Churn"),
+    )
+    transactions_spark_df = transactions_spark_df.select(
+        *[f.round(c, 2).alias(c) for c in transactions_spark_df.columns]
+    )
+    transactions_spark_df = transactions_spark_df.withColumn(
+        "DateByPeriod", f.expr("make_date(year, month, 1)")
+    ).orderBy("DateByPeriod")
+
+    return transactions_spark_df
+
+
+def yearly_income_stats(spark_df):
+    transactions_spark_df = spark_df.groupBy(f.year("Date").alias("year")).agg(
+        f.sum("Cust_ID").alias("sum_Cust_ID"),
+        f.sum("Purch_Amt").alias("sum_Purch_Amt"),
+        f.avg("Purch_Amt").alias("avg_Purch_Amt"),
+        f.avg("Price").alias("avg_Price"),
+        f.avg("Quantity").alias("avg_Quantity"),
+        f.sum("Quantity").alias("sum_Quantity"),
+        f.avg("Age").alias("avg_Age"),
+        f.sum("Returns").alias("sum_Returns"),
+        f.sum("Churn").alias("sum_Churn"),
+    )
+    transactions_spark_df = transactions_spark_df.select(
+        *[f.round(c, 2).alias(c) for c in transactions_spark_df.columns]
+    )
+    transactions_spark_df = transactions_spark_df.withColumn(
+        "DateByPeriod", f.expr("make_date(year, 1, 1)")
+    ).orderBy("DateByPeriod")
+
+    return transactions_spark_df
+
+
+def get_transactions_per_period(spark_df, period="monthly"):
+
+    if period == "daily":
+        transactions_spark_df = daily_income_stats(spark_df)
+
+    elif period == "monthly":
+        transactions_spark_df = monthly_income_stats(spark_df)
+
+    elif period == "yearly":
+        transactions_spark_df = yearly_income_stats(spark_df)
+    else:
+        e = f"Error: period ={period} is not defined "
+        raise Exception(e)
+
+    # extract the needed metrics
+    y_values = (
+        transactions_spark_df.select("sum_Purch_Amt").rdd.flatMap(lambda x: x).collect()
+    )
+    date_values = (
+        transactions_spark_df.select("DateByPeriod").rdd.flatMap(lambda x: x).collect()
+    )
+    date_values = [t.strftime("%Y-%b-%d") for t in date_values]
+    stat_dic = {
+        "date": date_values,
+        "income": y_values,
+    }
+    return transactions_spark_df, stat_dic
+
+
+### calculate sales growth
+def get_current_part_sales(yearly_stats_spark_df, monthly_stats_spark_df):
+    latest_operation = yearly_stats_spark_df.collect()[-1]
+    latest_operation.year
+
+    columns_list = [
+        "year",
+        "month",
+		"sum_Cust_ID",
+        "sum_Purch_Amt",
+        "avg_Purch_Amt",
+        "avg_Price",
+        "sum_Quantity",
+        "avg_Age",
+        "sum_Returns",
+        "sum_Churn",
+        "DateByPeriod",
+    ]
+
+    current_sales = monthly_stats_spark_df.select(*columns_list).where(
+        (f.col("year") >= latest_operation.year) & (f.col("year") >= 0)
+    )
+
+    start_current_period_operation = current_sales.collect()[0]
+    end_current_period_operation = current_sales.collect()[-1]
+
+    past_sales = monthly_stats_spark_df.select(*columns_list).where(
+        (f.col("year") == start_current_period_operation.year - 1)
+        & (f.col("month") >= start_current_period_operation.month)
+        & (f.col("month") <= end_current_period_operation.month)
+    )
+
+    return past_sales, current_sales
+
+
+def get_sales_windows_stats(sales_spark_df):
+    growth_stats_spark_df = sales_spark_df.groupBy(f.col("year")).agg(
+        f.sum("sum_Cust_ID").alias("sum_sum_Cust_ID"),
+        f.sum("sum_Purch_Amt").alias("sum_sum_Purch_Amt"),
+        f.avg("avg_Price").alias("avg_avg_Price"),
+        f.sum("sum_Quantity").alias("sum_sum_Quantity"),
+        f.avg("avg_Age").alias("avg_avg_Age"),
+        f.sum("sum_Returns").alias("sum_sum_Returns"),
+        f.sum("sum_Churn").alias("sum_sum_Churn"),
+    )
+    return growth_stats_spark_df.toPandas()
+
+
+def compute_sales_growth(current_sales, past_sales):
+    def compute_growth_metric(current_sales_stats_df, past_sales_stats_df, metric):
+        return round(
+            100
+            * (current_sales_stats_df[metric][0] - past_sales_stats_df[metric][0])
+            / past_sales_stats_df[metric][0],
+            2,
+        )
+
+    #  compute the current and last growths
+    current_sales_stats_df = get_sales_windows_stats(current_sales)
+    past_sales_stats_df = get_sales_windows_stats(past_sales)
+
+    #  sumamries the growth
+    growth_rate_dict = {}
+    for metric in current_sales_stats_df.columns:
+        if metric == "year":
+            growth_rate = current_sales_stats_df[metric][0]
+        else:
+            growth_rate = compute_growth_metric(
+                current_sales_stats_df, past_sales_stats_df, metric=metric
+            )
+        growth_rate_dict.update(
+            {metric.lstrip("sum_sum").lstrip("avg_avg_"): growth_rate}
+        )
+
+    return past_sales_stats_df, current_sales_stats_df, growth_rate_dict
+
+
+# rank sales by clients
+def rank_sales_by_clients(spark_df, topN=5):
+    ranked_clients_spark_df = (
+        spark_df.select('*')
+        .groupBy(spark_df.Cust_ID)
+        .count()
+        .orderBy("count", ascending=False)
+    )
+
+    transactions_spark_df = (
+        spark_df.groupBy(spark_df.Cust_ID, spark_df.Name, spark_df.Age)
+        .agg(
+            f.count("Cust_ID").alias("transactions count"),
+            f.max("Date").alias("latest transactions"),
+            f.sum("Purch_Amt").alias("sum_Purch_Amt"),
+            f.avg("Age").alias("avg_Age"),
+            f.sum("Returns").alias("sum_Returns"),
+            f.sum("Churn").alias("sum_Churn"),
+        )
+        .orderBy("transactions count", ascending=False)
+        .toPandas()
+    )
+
+    transactions_spark_df["percentage"] = round(
+        100
+        * transactions_spark_df["sum_Purch_Amt"]
+        / np.sum(transactions_spark_df["sum_Purch_Amt"]),
+        2,
+    )
+    top_ranked_clients_df = transactions_spark_df[:topN]
+    worst_ranked_clients_df = transactions_spark_df[-topN:]
+    return top_ranked_clients_df, worst_ranked_clients_df
+
+
+# rank sales by gender
+def rank_sales_by_gender(spark_df, topN=5):
+    purchases_by_gender = (
+        spark_df.groupBy("Category", "Gender")
+        .count()
+        .orderBy("count", ascending=False)
+        .toPandas()
+    )
+    top_purchases_by_gender_df = (
+        purchases_by_gender.pivot_table(
+            index="Category", columns="Gender", values="count", fill_value=0
+        )
+        .reset_index()
+        .rename_axis(None, axis=1)
+    )
+
+    top_purchases_by_gender_df["total"] = (
+        top_purchases_by_gender_df["Male"] + top_purchases_by_gender_df["Female"]
+    )
+    top_purchases_by_gender_df["percentage"] = round(
+        100
+        * top_purchases_by_gender_df["total"]
+        / np.sum(top_purchases_by_gender_df["total"]),
+        2,
+    )
+
+    top_purchases_by_gender_df["MalePercentage"] = round(
+        100 * top_purchases_by_gender_df["Male"] / top_purchases_by_gender_df["total"],
+        2,
+    )
+    top_purchases_by_gender_df["FemalePercentage"] = round(
+        100
+        * top_purchases_by_gender_df["Female"]
+        / top_purchases_by_gender_df["total"],
+        2,
+    )
+    return purchases_by_gender, top_purchases_by_gender_df[:topN]
+
+
+# plot sales by gender
+def plot_sales_by_gender(spark_df):
+    total_purchases = spark_df.count()
+    purchases_by_gender = (
+        spark_df.groupBy("Category", "Gender")
+        .count()
+        .orderBy("count", ascending=False)
+        .toPandas()
+    )
+    print(
+        f"There are total: {total_purchases} purchases and here is the chart for purchases based on gender:"
+    )
+
+    # Visualize
+    nb_categories = len(np.unique(purchases_by_gender["Category"]))
+    fig = plt.figure(figsize=(25, nb_categories))
+    grid_size = (1, 1)
+    ax = plt.subplot2grid(grid_size, (0, 0), colspan=1, rowspan=1)
+
+    plot = (
+        purchases_by_gender.groupby(["Category", "Gender"])
+        .agg(np.mean)
+        .groupby(level=0)
+        .apply(lambda x: 100 * x / x.sum())
+        .unstack()
+        .plot(
+            kind="barh",
+            stacked=True,
+            width=1,  ## APPLY UNSTACK TO RESHAPE DATA
+            edgecolor="black",
+            ax=ax,
+            title="List of all purchases by gender",
+        )
+    )
+    ylabel = plt.ylabel("Category (Purchase)")
+    xlabel = plt.xlabel("Participation percentage by gender")
+    legend = plt.legend(
+        sorted(purchases_by_gender["Gender"].unique()),
+        loc="center left",
+        bbox_to_anchor=(1.0, 0.5),
+    )
+    param_update = plt.rcParams.update({"font.size": 16})
+    ax = plt.gca()
+    formatter = ax.xaxis.set_major_formatter(mtick.PercentFormatter())
+    a = fig.tight_layout()
+    plt.show()
+
+
+def data_analysis_pipeline(spark, spark_df, topN=5, verbose=0):
+
+    # compute the sales stats by periods: daily, monthly, yearly
+    daily_stats_spark_df, daily_stat_dic = get_transactions_per_period(spark_df, period="daily")
+    monthly_stats_spark_df, monthly_stat_dic= get_transactions_per_period(spark_df, period="monthly")
+    yearly_stats_spark_df, yearly_stat_dic= get_transactions_per_period(spark_df, period="yearly")
+
+    # get monthly sales variation
+    monthly_sales = monthly_stats_spark_df.toPandas()
+
+    ### calculate sales growth
+    past_sales, current_sales = get_current_part_sales(yearly_stats_spark_df, monthly_stats_spark_df)
+    past_sales_stats_df, current_sales_stats_df, growth_rate_dict = compute_sales_growth(current_sales, past_sales)
+
+    # rank sales by clients
+    top_ranked_clients_df, worst_ranked_clients_df = rank_sales_by_clients(spark_df, topN=topN)
+
+    if verbose>0:
+        print(f'\n - Total transactions {spark_df.count()}  \n\n\n Top{topN} clients :')
+        print(top_ranked_clients_df)
+        print(f'\n - Total transactions {spark_df.count()}  \n\n\n Worst{topN} clients :')
+        print(worst_ranked_clients_df)
+
+    # rank sales by gender
+    purchases_by_gender, top_purchases_by_gender_df = rank_sales_by_gender(spark_df, topN=topN)
+
+    return (
+        monthly_sales,
+        past_sales_stats_df,
+        current_sales_stats_df,
+        growth_rate_dict,
+        top_ranked_clients_df,
+        worst_ranked_clients_df,
+        top_purchases_by_gender_df,
+    )
 
 
 def data_modeling_pipeline():
