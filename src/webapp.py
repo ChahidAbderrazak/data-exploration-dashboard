@@ -3,7 +3,7 @@ import os
 import shutil
 from pathlib import Path
 from typing import List
-
+import pandas as pd
 import uvicorn
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -228,7 +228,11 @@ async def upload_csv(file: UploadFile = File(...)):
                 status_code=400,
                 detail=f"Invalid file extension ({file_extension}). Please upload CSV/xltx/xlsx file types.",
             )
-        # print(f"\n\n - Data analysis in process ...")
+
+        stats_dict={}
+        print(f"\n\n - Data analysis in process ...")
+
+
         # ###-------------------------------------------------------------
         # # initialize the spark sessions
         # spark = init_spark(MAX_MEMORY="4G")
@@ -241,16 +245,42 @@ async def upload_csv(file: UploadFile = File(...)):
         # spark_df, missing_invalid_df = data_preparation_pipeline(spark, spark_df)
 
         # # run the data analysis pipeline
-        # monthly_spark_df = data_analysis_pipeline(spark, spark_df)
+        # monthly_sales, past_sales_stats_df,current_sales_stats_df,growth_rate_dict,\
+        # top_ranked_clients_df,worst_ranked_clients_df,\
+        #     top_purchases_by_gender_df = data_analysis_pipeline(spark, spark_df, topN=5, verbose=0)
 
         # ###-------------------------------------------------------------
         # df = pd.DataFrame()  # df.to_dict(orient="list")
-        # df["DateByMonth"] = monthly_spark_df["DateByMonth"]
-        # df["IncomeByMonth"] = monthly_spark_df["sum_Purch_Amt"]
-        df["DateByMonth"] = df["x"]
-        df["IncomeByMonth"] = df["y"]
-        data_dict = df.to_dict(orient="records")  # orient="list")
+        # df["DateByMonth"] = monthly_sales["DateByPeriod"]
+        # df["IncomeByMonth"] = monthly_sales["sum_Purch_Amt"]
+        # # df["Price"] = monthly_sales["avg_Price"]
+        # # df["Age"] = monthly_sales["avg_Age"]
+        # # df["Returns"] = monthly_sales["sum_Returns"]
+        # # df["Churn"] = monthly_sales["sum_Churn"]
 
+        # data_dict = df.to_dict(orient="records")  # orient="list")
+
+        # # growth
+
+
+        # # growth_rate_dict
+        # # stats_dict.update({"growth_rate": growth_rate_dict})
+
+        # # past_sales_dict = past_sales_stats_df.round(1).to_dict(orient="records")
+        # # stats_dict.update({"past_sales": past_sales_dict})
+
+        # # current_sales_dict = current_sales_stats_df.round(1).to_dict(orient="records")
+        # # stats_dict.update({"current_sales": current_sales_dict})
+
+        # # top_clients_dict=top_ranked_clients_df.astype(str).to_dict(orient="records")
+        # # stats_dict.update({"top_clients": top_clients_dict})
+
+        # # # Clients
+        # # clients = pd.DataFrame()  # df.to_dict(orient="list")
+        # # clients["DateByMonth"] = top_ranked_clients_df["DateByPeriod"]
+
+        # get the other data
+        data_dict = df.to_dict(orient="records")  # orient="list")
         print(f"csv_data={data_dict}")
         metadata = {
             "topic": "raw data",
@@ -264,6 +294,7 @@ async def upload_csv(file: UploadFile = File(...)):
             "status": "success",
             "metadata": metadata,
             "data": data_dict,
+            "stats": stats_dict,
         }
 
     except Exception as e:
