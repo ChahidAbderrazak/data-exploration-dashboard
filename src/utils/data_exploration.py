@@ -1,29 +1,27 @@
 # Import other modules not related to PySpark
 import os
-from datetime import *
 
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mtick
-
 import numpy as np
 import pandas as pd
-from IPython.core.interactiveshell import InteractiveShell
-
-matplotlib.rcParams["figure.dpi"] = 100
-InteractiveShell.ast_node_interpurchase = "all"
-# %matplotlib inline
 
 # Import PySpark related modules
 import pyspark
 import pyspark.sql.functions as f
+from IPython.core.interactiveshell import InteractiveShell
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import array_contains, col
-from pyspark.sql.types import *
+
+# from pyspark.sql.types import *
+
+# from datetime import *
+matplotlib.rcParams["figure.dpi"] = 100
+InteractiveShell.ast_node_interpurchase = "all"
 
 
+# %matplotlib inline
 def init_spark(MAX_MEMORY="15G"):
-
     # Initialize a spark session.
     conf = (
         pyspark.SparkConf()
@@ -254,7 +252,7 @@ def data_preparation_pipeline(spark, spark_df):
     return spark_df, missing_invalid_df
 
 
-### rank ales by product category
+# -- rank ales by product category
 def rank_sales_by_product_category(spark_df, topN=5):
     ranked_product_category_spark_df = (
         spark_df.select(spark_df.Category, spark_df.Cust_ID, spark_df.Date)
@@ -281,7 +279,7 @@ def rank_sales_by_product_category(spark_df, topN=5):
     return total_categories_clients, ranked_product_category_df
 
 
-### calculate sum of sales by month
+# -- calculate sum of sales by month
 def daily_income_stats(spark_df):
     transactions_spark_df = spark_df.groupBy(
         f.year("Date").alias("year"),
@@ -383,7 +381,7 @@ def get_transactions_per_period(spark_df, period="monthly"):
     return transactions_spark_df, stat_dic
 
 
-### calculate sales growth
+# -- calculate sales growth
 def get_current_part_sales(yearly_stats_spark_df, monthly_stats_spark_df):
     latest_operation = yearly_stats_spark_df.collect()[-1]
     latest_operation.year
@@ -391,7 +389,7 @@ def get_current_part_sales(yearly_stats_spark_df, monthly_stats_spark_df):
     columns_list = [
         "year",
         "month",
-		"sum_Cust_ID",
+        "sum_Cust_ID",
         "sum_Purch_Amt",
         "avg_Purch_Amt",
         "avg_Price",
@@ -462,12 +460,12 @@ def compute_sales_growth(current_sales, past_sales):
 
 # rank sales by clients
 def rank_sales_by_clients(spark_df, topN=5):
-    ranked_clients_spark_df = (
-        spark_df.select('*')
-        .groupBy(spark_df.Cust_ID)
-        .count()
-        .orderBy("count", ascending=False)
-    )
+    # ranked_clients_spark_df = (
+    #     spark_df.select("*")
+    #     .groupBy(spark_df.Cust_ID)
+    #     .count()
+    #     .orderBy("count", ascending=False)
+    # )
 
     transactions_spark_df = (
         spark_df.groupBy(spark_df.Cust_ID, spark_df.Name, spark_df.Age)
@@ -549,63 +547,81 @@ def plot_sales_by_gender(spark_df):
     # Visualize
     nb_categories = len(np.unique(purchases_by_gender["Category"]))
     fig = plt.figure(figsize=(25, nb_categories))
-    grid_size = (1, 1)
-    ax = plt.subplot2grid(grid_size, (0, 0), colspan=1, rowspan=1)
 
-    plot = (
-        purchases_by_gender.groupby(["Category", "Gender"])
-        .agg(np.mean)
-        .groupby(level=0)
-        .apply(lambda x: 100 * x / x.sum())
-        .unstack()
-        .plot(
-            kind="barh",
-            stacked=True,
-            width=1,  ## APPLY UNSTACK TO RESHAPE DATA
-            edgecolor="black",
-            ax=ax,
-            title="List of all purchases by gender",
-        )
-    )
-    ylabel = plt.ylabel("Category (Purchase)")
-    xlabel = plt.xlabel("Participation percentage by gender")
-    legend = plt.legend(
-        sorted(purchases_by_gender["Gender"].unique()),
-        loc="center left",
-        bbox_to_anchor=(1.0, 0.5),
-    )
-    param_update = plt.rcParams.update({"font.size": 16})
-    ax = plt.gca()
-    formatter = ax.xaxis.set_major_formatter(mtick.PercentFormatter())
-    a = fig.tight_layout()
+    #  TODO : check the plot here
+    # grid_size = (1, 1)
+    # ax = plt.subplot2grid(grid_size, (0, 0), colspan=1, rowspan=1)
+    # plot = (
+    #     purchases_by_gender.groupby(["Category", "Gender"])
+    #     .agg(np.mean)
+    #     .groupby(level=0)
+    #     .apply(lambda x: 100 * x / x.sum())
+    #     .unstack()
+    #     .plot(
+    #         kind="barh",
+    #         stacked=True,
+    #         width=1,  # -- APPLY UNSTACK TO RESHAPE DATA
+    #         edgecolor="black",
+    #         ax=ax,
+    #         title="List of all purchases by gender",
+    #     )
+    # )
+    # ylabel = plt.ylabel("Category (Purchase)")
+    # xlabel = plt.xlabel("Participation percentage by gender")
+    # legend = plt.legend(
+    #     sorted(purchases_by_gender["Gender"].unique()),
+    #     loc="center left",
+    #     bbox_to_anchor=(1.0, 0.5),
+    # )
+    # param_update = plt.rcParams.update({"font.size": 16})
+    # ax = plt.gca()
+    # formatter = ax.xaxis.set_major_formatter(mtick.PercentFormatter())
+
+    fig.tight_layout()
     plt.show()
 
 
 def data_analysis_pipeline(spark, spark_df, topN=5, verbose=0):
 
     # compute the sales stats by periods: daily, monthly, yearly
-    daily_stats_spark_df, daily_stat_dic = get_transactions_per_period(spark_df, period="daily")
-    monthly_stats_spark_df, monthly_stat_dic= get_transactions_per_period(spark_df, period="monthly")
-    yearly_stats_spark_df, yearly_stat_dic= get_transactions_per_period(spark_df, period="yearly")
+    daily_stats_spark_df, daily_stat_dic = get_transactions_per_period(
+        spark_df, period="daily"
+    )
+    monthly_stats_spark_df, monthly_stat_dic = get_transactions_per_period(
+        spark_df, period="monthly"
+    )
+    yearly_stats_spark_df, yearly_stat_dic = get_transactions_per_period(
+        spark_df, period="yearly"
+    )
 
     # get monthly sales variation
     monthly_sales = monthly_stats_spark_df.toPandas()
 
-    ### calculate sales growth
-    past_sales, current_sales = get_current_part_sales(yearly_stats_spark_df, monthly_stats_spark_df)
-    past_sales_stats_df, current_sales_stats_df, growth_rate_dict = compute_sales_growth(current_sales, past_sales)
+    # -- calculate sales growth
+    past_sales, current_sales = get_current_part_sales(
+        yearly_stats_spark_df, monthly_stats_spark_df
+    )
+    past_sales_stats_df, current_sales_stats_df, growth_rate_dict = (
+        compute_sales_growth(current_sales, past_sales)
+    )
 
     # rank sales by clients
-    top_ranked_clients_df, worst_ranked_clients_df = rank_sales_by_clients(spark_df, topN=topN)
+    top_ranked_clients_df, worst_ranked_clients_df = rank_sales_by_clients(
+        spark_df, topN=topN
+    )
 
-    if verbose>0:
-        print(f'\n - Total transactions {spark_df.count()}  \n\n\n Top{topN} clients :')
+    if verbose > 0:
+        print(f"\n - Total transactions {spark_df.count()}  \n\n\n Top{topN} clients :")
         print(top_ranked_clients_df)
-        print(f'\n - Total transactions {spark_df.count()}  \n\n\n Worst{topN} clients :')
+        print(
+            f"\n - Total transactions {spark_df.count()}  \n\n\n Worst{topN} clients :"
+        )
         print(worst_ranked_clients_df)
 
     # rank sales by gender
-    purchases_by_gender, top_purchases_by_gender_df = rank_sales_by_gender(spark_df, topN=topN)
+    purchases_by_gender, top_purchases_by_gender_df = rank_sales_by_gender(
+        spark_df, topN=topN
+    )
 
     return (
         monthly_sales,
@@ -626,3 +642,60 @@ def data_modeling_pipeline():
 def model_deployment_pipeline():
 
     return {}
+
+
+def full_preparation_modeling_pipelines(filename_path):
+    # ---------------------------------------------------------------
+    # initialize the spark sessions
+    spark = init_spark(MAX_MEMORY="4G")
+
+    # Load the main data set into pyspark data frame
+    spark_df = spark_load_data(spark, filename_path)
+
+    # ---------------------------------------------------------------
+    # run the  data preparation pipeline
+    spark_df, missing_invalid_df = data_preparation_pipeline(spark, spark_df)
+
+    # run the data analysis pipeline
+    (
+        monthly_sales,
+        past_sales_stats_df,
+        current_sales_stats_df,
+        growth_rate_dict,
+        top_ranked_clients_df,
+        worst_ranked_clients_df,
+        top_purchases_by_gender_df,
+    ) = data_analysis_pipeline(spark, spark_df, topN=5, verbose=0)
+
+    # ---------------------------------------------------------------
+    df = pd.DataFrame()  # df.to_dict(orient="list")
+    df["DateByMonth"] = monthly_sales["DateByPeriod"]
+    df["IncomeByMonth"] = monthly_sales["sum_Purch_Amt"]
+    # df["Price"] = monthly_sales["avg_Price"]
+    # df["Age"] = monthly_sales["avg_Age"]
+    # df["Returns"] = monthly_sales["sum_Returns"]
+    # df["Churn"] = monthly_sales["sum_Churn"]
+
+    data_dict = df.to_dict(orient="records")  # orient="list")
+
+    # growth
+    growth_rate_dict
+
+    # stats dictionary
+    stats_dict = {}
+    stats_dict.update({"growth_rate": growth_rate_dict})
+
+    past_sales_dict = past_sales_stats_df.round(1).to_dict(orient="records")
+    stats_dict.update({"past_sales": past_sales_dict})
+
+    current_sales_dict = current_sales_stats_df.round(1).to_dict(orient="records")
+    stats_dict.update({"current_sales": current_sales_dict})
+
+    top_clients_dict = top_ranked_clients_df.astype(str).to_dict(orient="records")
+    stats_dict.update({"top_clients": top_clients_dict})
+
+    # Clients
+    clients = pd.DataFrame()  # df.to_dict(orient="list")
+    clients["DateByMonth"] = top_ranked_clients_df["DateByPeriod"]
+
+    return data_dict

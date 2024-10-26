@@ -3,29 +3,22 @@ import os
 import shutil
 from pathlib import Path
 from typing import List
+
 import pandas as pd
 import uvicorn
-from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import File, HTTPException, UploadFile
 from mysql.connector import Error
 from pydantic import BaseModel
 
-from utils.configuration import setup_database
-from utils.data_exploration import *
+from utils.configuration import (
+    get_create_table_query,
+    setup_database,
+    setup_fastapi_server,
+)
+from utils.data_exploration import full_preparation_modeling_pipelines
 from utils.mysql_utils import SQL_connector
 
-app = FastAPI()
-
-origins = ["http://localhost:4200", "http://0.0.0.0:4200", "http://127.0.0.1:4200"]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
+app = setup_fastapi_server()
 
 # Database connection parameters
 database_type = "MySQL"  # "PostgreSQL"
@@ -34,17 +27,12 @@ print(f"database_credentials={database_credentials}")
 table_name = "product"
 root_folder = "data/Tables"
 upload_folder = "data/tmp"
-create_table_query = f"""
-            CREATE TABLE {table_name} (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    name VARCHAR(100),
-                    description TEXT,
-                    price DECIMAL(10, 2)
-                    );
-            """
+
+#  get the table creation query
+create_table_query = get_create_table_query(table_name)
 
 # Define where to save uploaded files
-## Create the directory if it doesn't exist
+# Create the directory if it doesn't exist
 Path(root_folder).mkdir(parents=True, exist_ok=True)
 Path(upload_folder).mkdir(parents=True, exist_ok=True)
 
@@ -66,8 +54,6 @@ class ItemResponse(BaseModel):
         orm_mode = True
 
 
-demo_item = Item(name="banana", description="description", price="10")
-
 MySQL = SQL_connector(
     database_type=database_type,
     root_folder=root_folder,
@@ -80,27 +66,32 @@ MySQL = SQL_connector(
 MySQL.create_table(table_name=table_name, query=create_table_query)
 
 
+@app.get("/server")
+async def hello(name: str = "World"):
+    # return {"message": f"Hello, {name}!"}
+    return {"status": "success"}
+
+
 # Create item
 @app.post("/items/", response_model=ItemResponse)
 def create_item(item: Item):
     """
     insert a new row to the product table
     """
-    try:
-        conn = MySQL.connection
-        cursor = conn.cursor()
-        query = (
-            f"INSERT INTO {table_name} (name, description, price) VALUES (%s, %s, %s)"
-        )
-        cursor.execute(query, (item.name, item.description, item.price))
-        conn.commit()
-        item_id = cursor.lastrowid
-        cursor.close()
-        conn.close()
-        return {**item.dict(), "id": item_id}
-    except Error as e:
-        print(f" error: {e}")
-        raise HTTPException(status_code=500, detail="Database error")
+    # try:
+    conn = MySQL.connection
+    cursor = conn.cursor()
+    query = f"INSERT INTO {table_name} (name, description, price) VALUES (%s, %s, %s)"
+    cursor.execute(query, (item.name, item.description, item.price))
+    conn.commit()
+
+    item_id = cursor.lastrowid
+    cursor.close()
+    # conn.close()
+    return {**item.dict(), "id": item_id}
+    # except Error as e:
+    #     print(f" error: {e}")
+    #     raise HTTPException(status_code=500, detail="Database error")
 
 
 # Get all items
@@ -116,7 +107,7 @@ def get_items():
         cursor.execute(query)
         items = cursor.fetchall()
         cursor.close()
-        conn.close()
+        # conn.close()
         return items
     except Error as e:
         print(f"error: {e}")
@@ -136,7 +127,7 @@ def get_item(item_id: int):
         cursor.execute(query, (item_id,))
         item = cursor.fetchone()
         cursor.close()
-        conn.close()
+        # conn.close()
         if item is None:
             raise HTTPException(status_code=404, detail="Item not found")
         return item
@@ -158,7 +149,7 @@ def update_item(item_id: int, item: Item):
         cursor.execute(query, (item.name, item.description, item.price, item_id))
         conn.commit()
         cursor.close()
-        conn.close()
+        # conn.close()
         if cursor.rowcount == 0:
             raise HTTPException(status_code=404, detail="Item not found")
         return {**item.dict(), "id": item_id}
@@ -174,14 +165,9 @@ def delete_item(item_id: int):
     Delete the row of the id={item_id} from the product table
     """
     try:
-        conn = MySQL.connection
-        cursor = conn.cursor()
-        query = f"DELETE FROM {table_name} WHERE id = %s"
-        cursor.execute(query, (item_id,))
-        conn.commit()
-        cursor.close()
-        conn.close()
-        if cursor.rowcount == 0:
+        query = f"DELETE FROM {table_name} WHERE id = {item_id}"
+        MySQL.send_query(query=query)
+        if MySQL.cursor.rowcount == 0:
             raise HTTPException(status_code=404, detail="Item not found")
         return {"detail": "Item deleted"}
     except Error as e:
@@ -229,58 +215,14 @@ async def upload_csv(file: UploadFile = File(...)):
                 detail=f"Invalid file extension ({file_extension}). Please upload CSV/xltx/xlsx file types.",
             )
 
-        stats_dict={}
+        #  Data analysis and Modeling
+        stats_dict = {}
         print(f"\n\n - Data analysis in process ...")
-
-
-        # ###-------------------------------------------------------------
-        # # initialize the spark sessions
-        # spark = init_spark(MAX_MEMORY="4G")
-
-        # # Load the main data set into pyspark data frame
-        # spark_df = spark_load_data(spark, filename_path)
-
-        # ###-------------------------------------------------------------
-        # # run the  data preparation pipeline
-        # spark_df, missing_invalid_df = data_preparation_pipeline(spark, spark_df)
-
-        # # run the data analysis pipeline
-        # monthly_sales, past_sales_stats_df,current_sales_stats_df,growth_rate_dict,\
-        # top_ranked_clients_df,worst_ranked_clients_df,\
-        #     top_purchases_by_gender_df = data_analysis_pipeline(spark, spark_df, topN=5, verbose=0)
-
-        # ###-------------------------------------------------------------
-        # df = pd.DataFrame()  # df.to_dict(orient="list")
-        # df["DateByMonth"] = monthly_sales["DateByPeriod"]
-        # df["IncomeByMonth"] = monthly_sales["sum_Purch_Amt"]
-        # # df["Price"] = monthly_sales["avg_Price"]
-        # # df["Age"] = monthly_sales["avg_Age"]
-        # # df["Returns"] = monthly_sales["sum_Returns"]
-        # # df["Churn"] = monthly_sales["sum_Churn"]
-
-        # data_dict = df.to_dict(orient="records")  # orient="list")
-
-        # # growth
-
-
-        # # growth_rate_dict
-        # # stats_dict.update({"growth_rate": growth_rate_dict})
-
-        # # past_sales_dict = past_sales_stats_df.round(1).to_dict(orient="records")
-        # # stats_dict.update({"past_sales": past_sales_dict})
-
-        # # current_sales_dict = current_sales_stats_df.round(1).to_dict(orient="records")
-        # # stats_dict.update({"current_sales": current_sales_dict})
-
-        # # top_clients_dict=top_ranked_clients_df.astype(str).to_dict(orient="records")
-        # # stats_dict.update({"top_clients": top_clients_dict})
-
-        # # # Clients
-        # # clients = pd.DataFrame()  # df.to_dict(orient="list")
-        # # clients["DateByMonth"] = top_ranked_clients_df["DateByPeriod"]
+        # -- run the pipeline
+        full_preparation_modeling_pipelines(filename_path)
 
         # get the other data
-        data_dict = df.to_dict(orient="records")  # orient="list")
+        data_dict = df.astype(str).to_dict(orient="records")  # orient="list")
         print(f"csv_data={data_dict}")
         metadata = {
             "topic": "raw data",
@@ -292,6 +234,7 @@ async def upload_csv(file: UploadFile = File(...)):
 
         return {
             "status": "success",
+            "filename": file.filename,
             "metadata": metadata,
             "data": data_dict,
             "stats": stats_dict,

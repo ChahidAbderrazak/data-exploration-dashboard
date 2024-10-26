@@ -9,6 +9,7 @@ data/**
 *.session.sql
 **/test_syntax.py
 **/tmp/**
+**/tutorials/**
 
 **/src0/**
 

@@ -1,0 +1,28 @@
+<div class="card mt-1">
+  <!-- File Upload Section -->
+  <div class="input-group">
+    <span class="input-group-addon input-group-prepend"
+      ><i class="glyphicon glyphicon-picture"></i
+    ></span>
+    <input
+      type="file"
+      class="form-control mb-3"
+      (change)="onFileSelected($event)"
+    />
+    <span class="input-group-btn input-group-append">
+      <button class="btn btn-primary" (click)="uploadCSV()">
+        Upload CSV data
+      </button>
+    </span>
+    <p class="text-danger" *ngIf="errorMessage">{{ errorMessage }}</p>
+  </div>
+
+  <!-- Chart Section -->
+  <div>
+    <!-- <canvas id="chartCanvas"></canvas>
+    <canvas id="chartCanvas" width="400" height="400"></canvas> -->
+    <canvas id="canvass">{{ chart }}</canvas>
+  </div>
+
+  
+</div>

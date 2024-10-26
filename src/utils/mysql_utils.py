@@ -170,9 +170,6 @@ class PostgreSQL_connector:
                 print(f"Error: Foreign key violation. Error Code: {error.pgcode}")
             else:
                 print(f"General Database Error. Error Code: {error.pgcode}")
-
-                print(f"General MySQL Error. Error Code: {err.errno}")
-
             return True
 
     def connect_to_database(self, max_attempt=3, delay=2):
@@ -266,26 +263,30 @@ class SQL_connector:
         try:
             self.cursor.execute(query)
             self.connection.commit()
-            return False
 
         except Exception as e:
             print(f"Query error: {e}")
-            return True
+
+        return self.cursor
 
     def create_table(self, table_name, query):
-        if not self.does_table_Exists(table_name=table_name):
-            # apply the query
-            err = self.send_query(query)
-            assert not err
+        # delete the table if it exists
+        if self.does_table_Exists(table_name):
+            # self.delete_table(table_name)
+            print("Table already exists!")
+        else:
+            # apply the create table query
+            self.send_query(query)
+            assert self.does_table_Exists(table_name=table_name)
             print("Table created successfully!")
 
     def delete_table(self, table_name):
         delete_table_query = f"DROP TABLE {table_name};"
 
-        if not self.does_table_Exists(table_name=table_name):
+        if self.does_table_Exists(table_name=table_name):
             # apply the query
-            err = self.send_query(delete_table_query)
-            assert not err
+            self.send_query(delete_table_query)
+            assert not self.does_table_Exists(table_name=table_name)
             print("Table deleted successfully!")
 
 
