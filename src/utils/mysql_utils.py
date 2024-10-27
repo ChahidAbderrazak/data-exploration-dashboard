@@ -62,7 +62,7 @@ class MySQL_connector:
         # The SQL connection has errors
         except mysql.connector.Error as err:
             # Print the error message
-            print(f"Error: {err}")
+
             # Handle specific error codes
             if err.errno == 1062:
                 print(
@@ -78,8 +78,10 @@ class MySQL_connector:
                 print(
                     f"Error: Access denied for user [{self.username}]. Error Code: {err.errno}"
                 )
-            # else:
-            #     print(f"General MySQL Error. Error Code: {err.errno}")
+            else:
+                warnings.warn(
+                    f"Warning: cannot connect to database!!  Error Code: {err.errno} "
+                )
 
             return True
 
@@ -241,7 +243,7 @@ class SQL_connector:
             # set connect cursor
             self.connection = self.Database.connection
             self.cursor = self.connection.cursor()
-            
+
         except Exception as e:
             raise(e)
 

@@ -199,6 +199,8 @@ def generate_explode(nb_categories):
 
 
 def data_preparation_pipeline(spark, spark_df):
+    print(f"\n\n - data preparation in process ...")
+
     # Replace 0 for null on only population column
     spark_df = spark_df.na.fill(value=0, subset=["Returns"])
 
@@ -582,6 +584,7 @@ def plot_sales_by_gender(spark_df):
 
 
 def data_analysis_pipeline(spark, spark_df, topN=5, verbose=0):
+    print(f"\n\n - data analysis in process ...")
 
     # compute the sales stats by periods: daily, monthly, yearly
     daily_stats_spark_df, daily_stat_dic = get_transactions_per_period(
@@ -635,11 +638,13 @@ def data_analysis_pipeline(spark, spark_df, topN=5, verbose=0):
 
 
 def data_modeling_pipeline():
+    print(f"\n\n - data modeling in process ...")
 
     return {}
 
 
 def model_deployment_pipeline():
+    print(f"\n\n - model deployment in process ...")
 
     return {}
 
@@ -676,7 +681,7 @@ def full_preparation_modeling_pipelines(filename_path):
     # df["Returns"] = monthly_sales["sum_Returns"]
     # df["Churn"] = monthly_sales["sum_Churn"]
 
-    data_dict = df.to_dict(orient="records")  # orient="list")
+    data_dict = df.astype(str).to_dict(orient="records")  # orient="list")
 
     # growth
     growth_rate_dict
@@ -698,4 +703,4 @@ def full_preparation_modeling_pipelines(filename_path):
     clients = pd.DataFrame()  # df.to_dict(orient="list")
     clients["DateByMonth"] = top_ranked_clients_df["DateByPeriod"]
 
-    return data_dict
+    return data_dict, stats_dict

@@ -23,8 +23,8 @@ client = TestClient(app)
 print(f" root={os.getcwd()}")
 
 
-@pytest.mark.skip(reason="already validated")
-# @pytest.mark.skipif(sys.version_info < (3, 8), reason="Requires Python 3.8 or later.")
+# @pytest.mark.skip(reason="already validated")
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Requires Python 3.8 or later.")
 class Test_Dashboard_APIs:
 
     def test_server_running(self):
@@ -92,6 +92,8 @@ class Test_Dashboard_APIs:
 
 
 @pytest.mark.skipif(sys.version_info < (3, 8), reason="Requires Python 3.8 or later.")
+@pytest.mark.skipif(MySQL is None, reason="No database is found!! ")
+
 class Test_Database_Queries_via_APIs:
 
     def test_database_connection(self):

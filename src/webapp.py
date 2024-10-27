@@ -1,6 +1,7 @@
 import io
 import os
 import shutil
+import warnings
 from pathlib import Path
 from typing import List
 
@@ -15,7 +16,6 @@ from utils.configuration import (
     setup_database,
     setup_fastapi_server,
 )
-from utils.data_exploration import full_preparation_modeling_pipelines
 from utils.mysql_utils import SQL_connector
 
 app = setup_fastapi_server()
@@ -54,16 +54,20 @@ class ItemResponse(BaseModel):
         orm_mode = True
 
 
-MySQL = SQL_connector(
-    database_type=database_type,
-    root_folder=root_folder,
-    username=database_credentials["username"],
-    password=database_credentials["password"],
-    database=database_credentials["database"],
-    host=database_credentials["host"],
-)
-# create a table if it does not exist
-MySQL.create_table(table_name=table_name, query=create_table_query)
+try:
+    MySQL = SQL_connector(
+        database_type=database_type,
+        root_folder=root_folder,
+        username=database_credentials["username"],
+        password=database_credentials["password"],
+        database=database_credentials["database"],
+        host=database_credentials["host"],
+    )
+    # create a table if it does not exist
+    MySQL.create_table(table_name=table_name, query=create_table_query)
+except:
+    warnings.warn(f"Warning: No database is found!!  ")
+    MySQL = None
 
 
 @app.get("/server")
@@ -82,7 +86,9 @@ def create_item(item: Item):
     try:
         conn = MySQL.connection
         cursor = conn.cursor()
-        query = f"INSERT INTO {table_name} (name, description, price) VALUES (%s, %s, %s)"
+        query = (
+            f"INSERT INTO {table_name} (name, description, price) VALUES (%s, %s, %s)"
+        )
         cursor.execute(query, (item.name, item.description, item.price))
         conn.commit()
         item_id = cursor.lastrowid
@@ -216,16 +222,24 @@ async def upload_csv(file: UploadFile = File(...)):
                 status_code=400,
                 detail=f"Invalid file extension ({file_extension}). Please upload CSV/xltx/xlsx file types.",
             )
+        # ##  Data analysis and Modeling
+        # data_dict, stats_dict = full_preparation_modeling_pipelines(filename_path)
 
-        #  Data analysis and Modeling
+        # Build the response dictionary
         stats_dict = {}
-        print(f"\n\n - Data analysis in process ...")
-        # -- run the pipeline
-        full_preparation_modeling_pipelines(filename_path)
+        data_dict = {"x": [1, 2, 3, 4, 5, 6, 7], "y": [12, 42, 35, 47, 50, 46, 77]}
 
-        # get the other data
-        data_dict = df.astype(str).to_dict(orient="records")  # orient="list")
-        print(f"csv_data={data_dict}")
+        # -- growth
+        growth_dic = {"value": 1250, "rate": -5.5, "arrow": "Bottom"}
+        stats_dict.update({"growth": growth_dic})
+
+        # -- returns
+        returns_dic = {"value": 1250, "rate": 15.5, "arrow": "Top"}
+        stats_dict.update({"returns": returns_dic})
+
+        print(f"data_dict={data_dict}")
+
+        # post the response
         metadata = {
             "topic": "raw data",
             "filename": file.filename,
