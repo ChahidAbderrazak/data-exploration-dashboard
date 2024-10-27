@@ -137,7 +137,8 @@ class Test_Database_Queries_via_APIs:
         self.check_item_database_response(response_json, data, id)
 
     def test_create_valid_item(self):
-        self.create_item(valid_data)
+        for k in range(3):
+            self.create_item(valid_data)
 
     def create_invalid_item(self, data):
         # Send a POST request to the /create_items/ endpoint
@@ -169,6 +170,6 @@ class Test_Database_Queries_via_APIs:
         # check the item content in the database and the server response are similar
         self.check_item_database_response(response_json, update_data, id)
 
-    # def test_delete_table(self):
-    #     # delete table
-    #     MySQL.delete_table(table_name)
+    def test_delete_table(self):
+        # delete table
+        MySQL.delete_table(table_name)

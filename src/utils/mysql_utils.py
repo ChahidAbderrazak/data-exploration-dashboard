@@ -237,9 +237,13 @@ class SQL_connector:
             self.Database = None
             raise f" datatabse type {database_type} is not define"
 
-        # set conenct cursor
-        self.connection = self.Database.connection
-        self.cursor = self.connection.cursor()
+        try:
+            # set connect cursor
+            self.connection = self.Database.connection
+            self.cursor = self.connection.cursor()
+            
+        except Exception as e:
+            raise(e)
 
     def database_info(self):
         print(f"---------------------------------")
