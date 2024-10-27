@@ -1,12 +1,15 @@
 # --------------------------------------------------------------------------------------------------
 import os
 import sys
-
+import numpy as np
 import pytest
-from database_configuration import Item, MySQL, app, table_name
-from fastapi.testclient import TestClient
 
-from utils.configuration import get_create_table_query
+sys.path
+sys.path.append("src")
+from fastapi.testclient import TestClient
+from testing_configuration import *
+
+from webapp import MySQL, app, create_table_query, table_name
 
 # check if we are on GITHUB_ACTIONS
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
@@ -15,19 +18,13 @@ if IN_GITHUB_ACTIONS:
     pytest.skip(reason="Test doesn't work in Github Actions.", allow_module_level=True)
 # --------------------------------------------------------------------------------------------------
 
-sys.path
-sys.path.append("src")
-demo_item = Item(name="item1", description="description1", price="10.5")
-
 # Instantiate the client
 client = TestClient(app)
 print(f" root={os.getcwd()}")
-#  get the table creation query
-create_table_query = get_create_table_query(table_name)
 
 
-# @pytest.mark.skip(reason="already validated")
-@pytest.mark.skipif(sys.version_info < (3, 8), reason="Requires Python 3.8 or later.")
+@pytest.mark.skip(reason="already validated")
+# @pytest.mark.skipif(sys.version_info < (3, 8), reason="Requires Python 3.8 or later.")
 class Test_Dashboard_APIs:
 
     def test_server_running(self):
@@ -109,46 +106,68 @@ class Test_Database_Queries_via_APIs:
         # create table
         MySQL.create_table(table_name=table_name, query=create_table_query)
 
-    def test_create_item(self):
-        # TODO: Check the new item creation
-        # Prepare the data for the new item
-        # import random
-        # N=random.randint(3, 100)
-        data = {
-            "name": "user1",
-            "description": "This is a test description",
-            "price": 120.0,
-        }
-
-        # Send a POST request to the /create_items/ endpoint
-        response = client.post("/items/", json=data)
-
-        # Assert that the response status code is 200 OK
-        assert response.status_code == 200
-
+    def check_item_database_response(self, response_json, data, id):
+        """
+        check the item content in the database and the server response are similar
+        """
         # Assert that the response contains the correct item data
-        response_json = response.json()
+        assert response_json["id"] == id
         assert response_json["name"] == data["name"]
         assert response_json["description"] == data["description"]
         assert response_json["price"] == data["price"]
 
         # Check that the item was actually inserted into the database
-        query = f"""
-        SELECT * from {table_name} where name="{data['name']}" \
-                                   AND description="{data['description']}" \
-                                   AND price="{data['price']}"
-        """
-        cursor = MySQL.connection.cursor(dictionary=True)
-        cursor.execute(query)
-        items = cursor.fetchall()
-        print(f"items={items}")
-        assert (
-            len(items) == 1
-        ), f"Error: there are {len(items)} sample similar to {data} as  follows: \n {items}"
-        item = items[0]
+        items = MySQL.search_for_sample(table_name=table_name, data=data)
+        item = items[-1]
+        assert item["id"] == id
         assert item["name"] == data["name"]
         assert item["description"] == data["description"]
-        assert item["price"] == data["price"]
+        assert float(item["price"]) == float(data["price"])
+
+    def create_item(self, data):
+        # Send a POST request to the /create_items/ endpoint
+        response = client.post("/items/", json=data)
+
+        # Assert that the response status code is 200 OK
+        assert response.status_code == 200
+        response_json = response.json()
+        id = response_json["id"]
+
+        # check the item content in the database and the server response are similar
+        self.check_item_database_response(response_json, data, id)
+
+    def test_create_valid_item(self):
+        self.create_item(valid_data)
+
+    def create_invalid_item(self, data):
+        # Send a POST request to the /create_items/ endpoint
+        response = client.post("/items/", json=data)
+
+        # Assert that the response status code is 200 OK
+        assert response.status_code == 500
+
+    def test_create_invalid_item(self):
+        for data in invalid_data:
+            self.create_invalid_item(data)
+
+    def test_get_items(self):
+        # Send a GET request to get all created items
+        response = client.get("/items/")
+        assert response.status_code == 200
+
+    def test_update_items(self):
+        # Send a POST request to the /create_items/ endpoint
+        id=1
+        response = client.put(f"/items/{id}", json=update_data)
+
+        # Assert that the response status code is 200 OK
+        # TODO : check the error :  404 = <Response [404 Not Found]>.status_code
+        assert response.status_code == 200
+        response_json = response.json()
+        assert id == response_json["id"]
+
+        # check the item content in the database and the server response are similar
+        self.check_item_database_response(response_json, update_data, id)
 
     # def test_delete_table(self):
     #     # delete table

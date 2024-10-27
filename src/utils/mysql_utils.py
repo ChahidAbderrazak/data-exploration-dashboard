@@ -1,5 +1,5 @@
 import time
-
+import warnings
 # for MySQL
 import mysql.connector
 
@@ -288,6 +288,30 @@ class SQL_connector:
             self.send_query(delete_table_query)
             assert not self.does_table_Exists(table_name=table_name)
             print("Table deleted successfully!")
+
+    def search_for_sample(self, table_name, data={}):
+        """Check that the item was actually inserted into the database"""
+
+        # build the search query
+        query = f"SELECT * from {table_name} "
+        if len(data) > 0:
+            query += " where "
+            for idx, key in enumerate(data.keys()):
+                query += f""" {key}="{data[key]}" """
+                if idx < len(data) - 1:
+                    query += " AND "
+
+        # run the query
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute(query)
+        items = cursor.fetchall()
+        cursor.close()
+
+        if len(data) > 0 and len(items)>1:
+            warnings.warn(
+                f"\n\nWarning: the record {data} seems to have {len(items)} duplicate : \n{items}"
+            )
+        return items
 
 
 if __name__ == "__main__":

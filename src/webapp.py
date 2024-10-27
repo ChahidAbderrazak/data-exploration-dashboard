@@ -78,20 +78,21 @@ def create_item(item: Item):
     """
     insert a new row to the product table
     """
-    # try:
-    conn = MySQL.connection
-    cursor = conn.cursor()
-    query = f"INSERT INTO {table_name} (name, description, price) VALUES (%s, %s, %s)"
-    cursor.execute(query, (item.name, item.description, item.price))
-    conn.commit()
+    print(f"Adding new  new item {item} to {table_name} ")
+    try:
+        conn = MySQL.connection
+        cursor = conn.cursor()
+        query = f"INSERT INTO {table_name} (name, description, price) VALUES (%s, %s, %s)"
+        cursor.execute(query, (item.name, item.description, item.price))
+        conn.commit()
+        item_id = cursor.lastrowid
+        cursor.close()
+        # conn.close()
+        return {**item.dict(), "id": item_id}
 
-    item_id = cursor.lastrowid
-    cursor.close()
-    # conn.close()
-    return {**item.dict(), "id": item_id}
-    # except Error as e:
-    #     print(f" error: {e}")
-    #     raise HTTPException(status_code=500, detail="Database error")
+    except Error as e:
+        print(f" error: {e}")
+        raise HTTPException(status_code=500, detail="Database error")
 
 
 # Get all items
@@ -167,6 +168,7 @@ def delete_item(item_id: int):
     try:
         query = f"DELETE FROM {table_name} WHERE id = {item_id}"
         MySQL.send_query(query=query)
+        MySQL.cursor.close()
         if MySQL.cursor.rowcount == 0:
             raise HTTPException(status_code=404, detail="Item not found")
         return {"detail": "Item deleted"}
