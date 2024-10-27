@@ -23,3 +23,7 @@ def test_IN_GITHUB():
 
 def test_example():
     assert True
+
+
+data_dict = {"x": [1, 2, 3, 4, 5, 6, 7], "y": [12, 42, 35, 47, 50, 46, 77]}
+print(list(data_dict.keys()))

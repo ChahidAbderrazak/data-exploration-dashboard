@@ -648,6 +648,27 @@ def model_deployment_pipeline():
 
     return {}
 
+def get_widget_info(value, rate):
+    """
+    build the attributes of the dashboard widget
+    """
+    if rate>0:
+        arrow="cilArrowTop"
+        color = "color:green;"
+    elif rate==0:
+        arrow=""
+        color = "color:gray;"
+    else:
+        arrow="cilArrowBottom"
+        color = "color:red;"
+
+    widget_dic = {"value": "{:,}$".format(value),
+    "rate": rate,
+    "arrow": arrow,
+    "color": color}
+
+    return widget_dic
+
 
 def full_preparation_modeling_pipelines(filename_path):
     # ---------------------------------------------------------------
