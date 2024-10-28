@@ -54,7 +54,7 @@ class Test_Dashboard_APIs:
         assert response_json["filename"] == "test_image.jpg"
         assert response_json["status"] == "success"
 
-    def test_csv_image(self):
+    def test_upload_csv(self):
         # Define the path to the test image
         csv_path = "data/purchase_data_sample.xlsx"
 

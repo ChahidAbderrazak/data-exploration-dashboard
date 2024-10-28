@@ -17,7 +17,7 @@ from utils.configuration import (
     setup_fastapi_server,
 )
 from utils.mysql_utils import SQL_connector
-from utils.data_exploration import  get_widget_info
+from utils.data_exploration import  get_widget_info, demo_preparation_modeling_pipelines
 app = setup_fastapi_server()
 
 # Database connection parameters
@@ -232,33 +232,7 @@ async def upload_csv(file: UploadFile = File(...)):
         # data_dict, stats_dict = full_preparation_modeling_pipelines(filename_path)
 
         # Build the response dictionary
-
-        # data_dict = {"x": [1, 2, 3, 4, 5, 6, 7], "y": [12, 42, 35, 47, 50, 46, 77]}
-        # data_columns=list(data_dict.keys())
-
-        # -- Customer
-        customer_dic = get_widget_info(value=19960, rate=-3.9)
-        stats_dict.update({"Customer": customer_dic})
-
-
-        # -- Income
-        growth_dic = get_widget_info(value=15250, rate=-5.5)
-        stats_dict.update({"Income": growth_dic})
-
-        # -- Customer
-        price_dic = get_widget_info(value=190, rate=0.5)
-        stats_dict.update({"Price": price_dic})
-
-        # -- Returns
-        returns_dic = get_widget_info(value=65, rate=-0.5)
-        stats_dict.update({"Returns": returns_dic})
-
-        # -- Churns
-        churns_dic = get_widget_info(value=10, rate=1.5)
-        stats_dict.update({"Churns": churns_dic})
-
-        print(f"stats_dict={stats_dict}")
-        print(f"data_dict={data_dict}")
+        data_dict, stats_dict = demo_preparation_modeling_pipelines()
 
         # post the response
         metadata = {

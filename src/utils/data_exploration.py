@@ -1,11 +1,11 @@
 # Import other modules not related to PySpark
+import json
 import os
 
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
 # Import PySpark related modules
 import pyspark
 import pyspark.sql.functions as f
@@ -191,6 +191,21 @@ def plot_columns(df, x_column, y_columns, title="", subplot=True):
         plt.title(title)
     # show the canvas
     plt.show()
+
+
+def save_dict_to_json(dict_, filepath):
+    # Save dict to JSON file
+    with open(filepath, "w") as outfile:
+        json.dump(dict_, outfile)
+    outfile.close()
+
+
+def load_dict_from_json(filepath):
+    # read json file
+    with open(filepath, "r") as file:
+        dict_ = json.load(file)
+    file.close()
+    return dict_
 
 
 def generate_explode(nb_categories):
@@ -454,7 +469,7 @@ def compute_sales_growth(current_sales, past_sales):
                 current_sales_stats_df, past_sales_stats_df, metric=metric
             )
         growth_rate_dict.update(
-            {metric.lstrip("sum_sum").lstrip("avg_avg_"): growth_rate}
+            {metric.lstrip("sum_sum").lstrip("avg_avg_"): str(growth_rate)}
         )
 
     return past_sales_stats_df, current_sales_stats_df, growth_rate_dict
@@ -462,17 +477,12 @@ def compute_sales_growth(current_sales, past_sales):
 
 # rank sales by clients
 def rank_sales_by_clients(spark_df, topN=5):
-    # ranked_clients_spark_df = (
-    #     spark_df.select("*")
-    #     .groupBy(spark_df.Cust_ID)
-    #     .count()
-    #     .orderBy("count", ascending=False)
-    # )
 
     transactions_spark_df = (
         spark_df.groupBy(spark_df.Cust_ID, spark_df.Name, spark_df.Age)
         .agg(
             f.count("Cust_ID").alias("transactions count"),
+            f.min("Date").alias("first transactions"),
             f.max("Date").alias("latest transactions"),
             f.sum("Purch_Amt").alias("sum_Purch_Amt"),
             f.avg("Age").alias("avg_Age"),
@@ -597,9 +607,6 @@ def data_analysis_pipeline(spark, spark_df, topN=5, verbose=0):
         spark_df, period="yearly"
     )
 
-    # get monthly sales variation
-    monthly_sales = monthly_stats_spark_df.toPandas()
-
     # -- calculate sales growth
     past_sales, current_sales = get_current_part_sales(
         yearly_stats_spark_df, monthly_stats_spark_df
@@ -625,12 +632,20 @@ def data_analysis_pipeline(spark, spark_df, topN=5, verbose=0):
     purchases_by_gender, top_purchases_by_gender_df = rank_sales_by_gender(
         spark_df, topN=topN
     )
+    # compute ratios
+    ratio_female = round(100*np.sum(top_purchases_by_gender_df["Female"])\
+                            /(np.sum(top_purchases_by_gender_df["Male"] + top_purchases_by_gender_df["Female"]))
+                        ,2)
+    ratio_male = 100-ratio_female
+    ratio_gender_dict={"Male": str(round(ratio_male,1)), "Female": str(round(ratio_female,1))}
 
     return (
-        monthly_sales,
+        growth_rate_dict,
+        ratio_gender_dict,
+        monthly_stats_spark_df.toPandas(),
+        yearly_stats_spark_df.toPandas(),
         past_sales_stats_df,
         current_sales_stats_df,
-        growth_rate_dict,
         top_ranked_clients_df,
         worst_ranked_clients_df,
         top_purchases_by_gender_df,
@@ -648,24 +663,27 @@ def model_deployment_pipeline():
 
     return {}
 
+
 def get_widget_info(value, rate):
     """
     build the attributes of the dashboard widget
     """
-    if rate>0:
-        arrow="cilArrowTop"
+    if rate > 0:
+        arrow = "cilArrowTop"
         color = "color:green;"
-    elif rate==0:
-        arrow=""
+    elif rate == 0:
+        arrow = ""
         color = "color:gray;"
     else:
-        arrow="cilArrowBottom"
+        arrow = "cilArrowBottom"
         color = "color:red;"
 
-    widget_dic = {"value": "{:,}$".format(value),
-    "rate": rate,
-    "arrow": arrow,
-    "color": color}
+    widget_dic = {
+        "value": "{:,}$".format(value),
+        "rate": rate,
+        "arrow": arrow,
+        "color": color,
+    }
 
     return widget_dic
 
@@ -684,44 +702,174 @@ def full_preparation_modeling_pipelines(filename_path):
 
     # run the data analysis pipeline
     (
-        monthly_sales,
+        growth_rate_dict,
+        ratio_gender_dict,
+        monthly_stats_df,
+        yearly_stats_df,
         past_sales_stats_df,
         current_sales_stats_df,
-        growth_rate_dict,
         top_ranked_clients_df,
         worst_ranked_clients_df,
         top_purchases_by_gender_df,
     ) = data_analysis_pipeline(spark, spark_df, topN=5, verbose=0)
 
+    # prepare the API dict
+    data_dict, stats_dict = prepare_the_API_dicts(
+        growth_rate_dict,
+        ratio_gender_dict,
+        monthly_stats_df,
+        yearly_stats_df,
+        past_sales_stats_df,
+        current_sales_stats_df,
+        top_ranked_clients_df,
+        worst_ranked_clients_df,
+        top_purchases_by_gender_df,
+    )
+
+    return data_dict, stats_dict
+
+
+def prepare_the_API_dicts(
+    growth_rate_dict,
+    ratio_gender_dict,
+    monthly_stats_df,
+    yearly_stats_df,
+    past_sales_stats_df,
+    current_sales_stats_df,
+    top_ranked_clients_df,
+    worst_ranked_clients_df,
+    top_purchases_by_gender_df,
+):
+
     # ---------------------------------------------------------------
-    df = pd.DataFrame()  # df.to_dict(orient="list")
-    df["DateByMonth"] = monthly_sales["DateByPeriod"]
-    df["IncomeByMonth"] = monthly_sales["sum_Purch_Amt"]
-    # df["Price"] = monthly_sales["avg_Price"]
-    # df["Age"] = monthly_sales["avg_Age"]
-    # df["Returns"] = monthly_sales["sum_Returns"]
-    # df["Churn"] = monthly_sales["sum_Churn"]
+    # data_dict = df.astype(str).to_dict(orient="records")  # orient="list")
 
-    data_dict = df.astype(str).to_dict(orient="records")  # orient="list")
+    # Tables dict
+    data_dict = {}
+    # monthly sales
+    data_dict.update(
+        {"monthly_sales": monthly_stats_df.round(1).astype(str).to_dict(orient="records")}
+    )
+    # yearly sales
+    data_dict.update(
+        {"yearly_sales": yearly_stats_df.round(1).astype(str).to_dict(orient="records")}
+    )
 
-    # growth
-    growth_rate_dict
+    # Past sales
+    data_dict.update(
+        {
+            "past_sales": past_sales_stats_df.round(1)
+            .astype(str)
+            .to_dict(orient="records")
+        }
+    )
+    # Current sales
+    data_dict.update(
+        {
+            "current_sales": current_sales_stats_df.round(1)
+            .astype(str)
+            .to_dict(orient="records")
+        }
+    )
+    # Top Clients
+    data_dict.update(
+        {
+            "top_ranked_clients": top_ranked_clients_df.round(1)
+            .astype(str)
+            .to_dict(orient="records")
+        }
+    )
+
 
     # stats dictionary
     stats_dict = {}
     stats_dict.update({"growth_rate": growth_rate_dict})
 
-    past_sales_dict = past_sales_stats_df.round(1).to_dict(orient="records")
-    stats_dict.update({"past_sales": past_sales_dict})
+    # -- Customer
+    customer_dic = get_widget_info(value=19960, rate=-3.9)
+    stats_dict.update({"Customer": customer_dic})
 
-    current_sales_dict = current_sales_stats_df.round(1).to_dict(orient="records")
-    stats_dict.update({"current_sales": current_sales_dict})
+    # -- Income
+    growth_dic = get_widget_info(value=15250, rate=-5.5)
+    stats_dict.update({"Income": growth_dic})
 
-    top_clients_dict = top_ranked_clients_df.astype(str).to_dict(orient="records")
-    stats_dict.update({"top_clients": top_clients_dict})
+    # -- Customer
+    price_dic = get_widget_info(value=190, rate=0.5)
+    stats_dict.update({"Price": price_dic})
 
-    # Clients
-    clients = pd.DataFrame()  # df.to_dict(orient="list")
-    clients["DateByMonth"] = top_ranked_clients_df["DateByPeriod"]
+    # -- Returns
+    returns_dic = get_widget_info(value=65, rate=-0.5)
+    stats_dict.update({"Returns": returns_dic})
+
+    # -- Churns
+    churns_dic = get_widget_info(value=10, rate=1.5)
+    stats_dict.update({"Churns": churns_dic})
+
+    # display
+
+    print(f"stats_dict={stats_dict}")
+    print(f"data_dict={data_dict}")
 
     return data_dict, stats_dict
+
+
+def demo_preparation_modeling_pipelines():
+    growth_rate_dict = load_dict_from_json(filepath="data/test/growth_rate_dict.json")
+    ratio_gender_dict = load_dict_from_json(filepath="data/test/ratio_gender_dict.json")
+
+    yearly_stats_df = pd.DataFrame(
+        load_dict_from_json(filepath="data/test/yearly_stats_spark_df.json")
+    )
+    monthly_stats_df = pd.DataFrame(
+        load_dict_from_json(filepath="data/test/monthly_stats_spark_df.json")
+    )
+    past_sales_stats_df = pd.DataFrame(
+        load_dict_from_json(filepath="data/test/past_sales_stats_df.json")
+    )
+    current_sales_stats_df = pd.DataFrame(
+        load_dict_from_json(filepath="data/test/current_sales_stats_df.json")
+    )
+    top_ranked_clients_df = pd.DataFrame(
+        load_dict_from_json(filepath="data/test/top_ranked_clients_df.json")
+    )
+    worst_ranked_clients_df = pd.DataFrame(
+        load_dict_from_json(filepath="data/test/worst_ranked_clients_df.json")
+    )
+    top_purchases_by_gender_df = pd.DataFrame(
+        load_dict_from_json(filepath="data/test/top_purchases_by_gender_df.json")
+    )
+
+    # prepare the API dict
+    data_dict, stats_dict =prepare_the_API_dicts(
+        growth_rate_dict,
+        ratio_gender_dict,
+        monthly_stats_df,
+        yearly_stats_df,
+        past_sales_stats_df,
+        current_sales_stats_df,
+        top_ranked_clients_df,
+        worst_ranked_clients_df,
+        top_purchases_by_gender_df,
+    )
+
+    return data_dict, stats_dict
+
+
+# def save_resutls_to_json():
+#     # save the results in json files
+#     save_dict_to_json(ratio_gender_dict, filepath="data/test/ratio_gender_dict.json")
+#     save_dict_to_json(growth_rate_dict, filepath="data/test/growth_rate_dict.json")
+
+#     save_dict_to_json(current_sales.toPandas().astype(str).to_dict(orient="records"), filepath="data/test/current_sales.json")
+#     save_dict_to_json(past_sales.toPandas().astype(str).to_dict(orient="records"), filepath="data/test/past_sales.json")
+#     save_dict_to_json(past_sales_stats_df.astype(str).to_dict(orient="records"), filepath="data/test/past_sales_stats_df.json")
+#     save_dict_to_json(current_sales_stats_df.astype(str).to_dict(orient="records"), filepath="data/test/current_sales_stats_df.json")
+#     save_dict_to_json(past_sales.toPandas().astype(str).to_dict(orient="records"), filepath="data/test/past_sales.json")
+
+#     save_dict_to_json(top_ranked_clients_df.astype(str).to_dict(orient="records"), filepath="data/test/top_ranked_clients_df.json")
+#     save_dict_to_json(worst_ranked_clients_df.astype(str).to_dict(orient="records"), filepath="data/test/worst_ranked_clients_df.json")
+
+#     save_dict_to_json(top_purchases_by_gender_df.astype(str).to_dict(orient="records"), filepath="data/test/top_purchases_by_gender_df.json")
+#     save_dict_to_json(ranked_product_category_df.astype(str).to_dict(orient="records"), filepath="data/test/ranked_product_category_df.json")
+#     save_dict_to_json(monthly_stats_spark_df.toPandas().astype(str).to_dict(orient="records"), filepath="data/test/monthly_stats_spark_df.json")
+#     save_dict_to_json(yearly_stats_spark_df.toPandas().astype(str).to_dict(orient="records"), filepath="data/test/yearly_stats_spark_df.json")

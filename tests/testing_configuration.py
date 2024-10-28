@@ -1,5 +1,17 @@
-# Prepare the data for the new item
+# --------------------------------------------------------------------------------------------------
+import os
+import sys
+import numpy as np
+import pandas as pd
+import pytest
 
+sys.path
+sys.path.append("src")
+from utils.data_exploration import demo_preparation_modeling_pipelines
+
+
+
+data_dict, stats_dict = demo_preparation_modeling_pipelines()
 valid_data = {
     "name": "user",
     "description": "This is a test description",
