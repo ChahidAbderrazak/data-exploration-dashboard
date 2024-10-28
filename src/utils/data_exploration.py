@@ -664,10 +664,17 @@ def model_deployment_pipeline():
     return {}
 
 
-def get_widget_info(value, rate):
+def get_widget_info(value, rate, digits=0):
     """
     build the attributes of the dashboard widget
     """
+    rate=float(rate)
+    if digits==0:
+        value=int(float(value))
+    else:
+        value=round(float(value), digits)
+
+    # define the arrow direction and color
     if rate > 0:
         arrow = "cilArrowTop"
         color = "color:green;"
@@ -679,7 +686,7 @@ def get_widget_info(value, rate):
         color = "color:red;"
 
     widget_dic = {
-        "value": "{:,}$".format(value),
+        "value": "{:,}".format(value),
         "rate": rate,
         "arrow": arrow,
         "color": color,
@@ -785,24 +792,32 @@ def prepare_the_API_dicts(
     stats_dict = {}
     stats_dict.update({"growth_rate": growth_rate_dict})
 
+
     # -- Customer
-    customer_dic = get_widget_info(value=19960, rate=-3.9)
+    customer_dic = get_widget_info(value=current_sales_stats_df["sum_sum_Cust_ID"],
+                                    rate=growth_rate_dict["Cust_ID"])
+
     stats_dict.update({"Customer": customer_dic})
 
     # -- Income
-    growth_dic = get_widget_info(value=15250, rate=-5.5)
-    stats_dict.update({"Income": growth_dic})
+    income_dic = get_widget_info(value=current_sales_stats_df["sum_sum_Purch_Amt"],
+                                  rate=growth_rate_dict["Purch_Amt"])
+    stats_dict.update({"Income": income_dic})
 
-    # -- Customer
-    price_dic = get_widget_info(value=190, rate=0.5)
+    # -- Price
+    price_dic = get_widget_info(value=current_sales_stats_df["avg_avg_Price"],
+                                    rate=growth_rate_dict["Price"],
+                                    digits=1)
     stats_dict.update({"Price": price_dic})
 
     # -- Returns
-    returns_dic = get_widget_info(value=65, rate=-0.5)
+    returns_dic = get_widget_info(value=current_sales_stats_df["sum_sum_Returns"],
+                                  rate=growth_rate_dict["Returns"])
     stats_dict.update({"Returns": returns_dic})
 
     # -- Churns
-    churns_dic = get_widget_info(value=10, rate=1.5)
+    churns_dic = get_widget_info(value=current_sales_stats_df["sum_sum_Churn"],
+                                  rate=growth_rate_dict["Churn"])
     stats_dict.update({"Churns": churns_dic})
 
     # display
@@ -814,43 +829,48 @@ def prepare_the_API_dicts(
 
 
 def demo_preparation_modeling_pipelines():
-    growth_rate_dict = load_dict_from_json(filepath="data/test/growth_rate_dict.json")
-    ratio_gender_dict = load_dict_from_json(filepath="data/test/ratio_gender_dict.json")
+    try:
+        growth_rate_dict = load_dict_from_json(filepath="data/test/growth_rate_dict.json")
+        ratio_gender_dict = load_dict_from_json(filepath="data/test/ratio_gender_dict.json")
 
-    yearly_stats_df = pd.DataFrame(
-        load_dict_from_json(filepath="data/test/yearly_stats_spark_df.json")
-    )
-    monthly_stats_df = pd.DataFrame(
-        load_dict_from_json(filepath="data/test/monthly_stats_spark_df.json")
-    )
-    past_sales_stats_df = pd.DataFrame(
-        load_dict_from_json(filepath="data/test/past_sales_stats_df.json")
-    )
-    current_sales_stats_df = pd.DataFrame(
-        load_dict_from_json(filepath="data/test/current_sales_stats_df.json")
-    )
-    top_ranked_clients_df = pd.DataFrame(
-        load_dict_from_json(filepath="data/test/top_ranked_clients_df.json")
-    )
-    worst_ranked_clients_df = pd.DataFrame(
-        load_dict_from_json(filepath="data/test/worst_ranked_clients_df.json")
-    )
-    top_purchases_by_gender_df = pd.DataFrame(
-        load_dict_from_json(filepath="data/test/top_purchases_by_gender_df.json")
-    )
+        yearly_stats_df = pd.DataFrame(
+            load_dict_from_json(filepath="data/test/yearly_stats_spark_df.json")
+        )
+        monthly_stats_df = pd.DataFrame(
+            load_dict_from_json(filepath="data/test/monthly_stats_spark_df.json")
+        )
+        past_sales_stats_df = pd.DataFrame(
+            load_dict_from_json(filepath="data/test/past_sales_stats_df.json")
+        )
+        current_sales_stats_df = pd.DataFrame(
+            load_dict_from_json(filepath="data/test/current_sales_stats_df.json")
+        )
+        top_ranked_clients_df = pd.DataFrame(
+            load_dict_from_json(filepath="data/test/top_ranked_clients_df.json")
+        )
+        worst_ranked_clients_df = pd.DataFrame(
+            load_dict_from_json(filepath="data/test/worst_ranked_clients_df.json")
+        )
+        top_purchases_by_gender_df = pd.DataFrame(
+            load_dict_from_json(filepath="data/test/top_purchases_by_gender_df.json")
+        )
 
-    # prepare the API dict
-    data_dict, stats_dict =prepare_the_API_dicts(
-        growth_rate_dict,
-        ratio_gender_dict,
-        monthly_stats_df,
-        yearly_stats_df,
-        past_sales_stats_df,
-        current_sales_stats_df,
-        top_ranked_clients_df,
-        worst_ranked_clients_df,
-        top_purchases_by_gender_df,
-    )
+        # prepare the API dict
+        data_dict, stats_dict =prepare_the_API_dicts(
+            growth_rate_dict,
+            ratio_gender_dict,
+            monthly_stats_df,
+            yearly_stats_df,
+            past_sales_stats_df,
+            current_sales_stats_df,
+            top_ranked_clients_df,
+            worst_ranked_clients_df,
+            top_purchases_by_gender_df,
+        )
+
+    except Exception as e:
+        print(f"Error: {e}")
+        raise e
 
     return data_dict, stats_dict
 

@@ -140,7 +140,6 @@ export class DashboardComponent implements OnInit {
           this.Data_toPlot = response.data.data_dict;
           this.stats = response.data.stats_dict;
           this.build_data_for_charts();
-          console.log('apiStats' + this.stats);
           // this.createChart();
           this.errorMessage = '';
         } else {
@@ -150,7 +149,7 @@ export class DashboardComponent implements OnInit {
       })
       .catch((error) => {
         console.error('Error uploading CSV:', error);
-        this.errorMessage = 'Failed to upload CSV file.';
+        // this.errorMessage = 'Failed to upload CSV file.';
       });
   }
 

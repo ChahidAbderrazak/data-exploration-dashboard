@@ -1,15 +1,21 @@
 # --------------------------------------------------------------------------------------------------
 import os
 import sys
-import numpy as np
+
 import pytest
 
 sys.path
 sys.path.append("src")
 from fastapi.testclient import TestClient
-from testing_configuration import *
+from webapp import (
+    MySQL,
+    app,
+    create_table_query,
+    demo_preparation_modeling_pipelines,
+    table_name,
+)
 
-from webapp import MySQL, app, create_table_query, table_name
+from testing_configuration import *
 
 # check if we are on GITHUB_ACTIONS
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
@@ -23,7 +29,16 @@ client = TestClient(app)
 print(f" root={os.getcwd()}")
 
 
-# @pytest.mark.skip(reason="already validated")
+# @pytest.mark.skip(reason="already validated, Skip for now!")
+@pytest.mark.skipif(sys.version_info < (3, 8), reason="Requires Python 3.8 or later.")
+class Test_data_exploration_pipelines:
+    def test_build_api_dict(self):
+        # Build the response dictionary
+        data_dict, stats_dict = demo_preparation_modeling_pipelines()
+        assert len(data_dict)>0 , f" No  data was loaded "
+        assert len(stats_dict)>0, f" No  stats was loaded "
+
+@pytest.mark.skip(reason="already validated, Skip for now!")
 @pytest.mark.skipif(sys.version_info < (3, 8), reason="Requires Python 3.8 or later.")
 class Test_Dashboard_APIs:
 
@@ -93,7 +108,6 @@ class Test_Dashboard_APIs:
 
 @pytest.mark.skipif(sys.version_info < (3, 8), reason="Requires Python 3.8 or later.")
 @pytest.mark.skipif(MySQL is None, reason="No database is found!! ")
-
 class Test_Database_Queries_via_APIs:
 
     def test_database_connection(self):
@@ -160,7 +174,7 @@ class Test_Database_Queries_via_APIs:
 
     def test_update_items(self):
         # Send a POST request to the /create_items/ endpoint
-        id=1
+        id = 1
         response = client.put(f"/items/{id}", json=update_data)
 
         # Assert that the response status code is 200 OK

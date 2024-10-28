@@ -52,7 +52,7 @@ import {
 export class WidgetsDropdownComponent implements OnInit, AfterContentInit {
   constructor(private changeDetectorRef: ChangeDetectorRef) {}
 
-  @Input() apiStats: any = '';
+  @Input() apiStats: any;
 
   data: any[] = [];
   options: any[] = [];

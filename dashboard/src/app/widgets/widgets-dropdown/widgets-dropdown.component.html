@@ -2,7 +2,7 @@
   <c-col sm="5" xl="2">
     <c-widget-stat-a color="primary" [title]="'Customer'">
       <ng-template cTemplateId="widgetValueTemplate" ngPreserveWhitespaces>
-       {{apiStats.Customer.value}}
+        <span>${{apiStats.Customer.value}}</span> <br>
         <span class="fw-normal" style="font-size: 12px">
           ({{apiStats.Customer.rate}}% <svg cIcon name={{apiStats.Customer.arrow}} size="sm"></svg>)
         </span>
@@ -46,7 +46,7 @@
   <c-col sm="5" xl="2">
     <c-widget-stat-a [title]="'Income'" color="info">
       <ng-template cTemplateId="widgetValueTemplate" ngPreserveWhitespaces>
-        <span> {{apiStats.Income.value}}</span>
+        <span> ${{apiStats.Income.value}}</span> <br>
         <span class="fw-normal" style="font-size: 12px">
           ( {{apiStats.Income.rate}}%<svg cIcon name= {{apiStats.Income.arrow}} size="sm"></svg>)
         </span>
@@ -87,7 +87,7 @@
   <c-col sm="5" xl="2">
     <c-widget-stat-a [title]="'Price'" color="warning">
       <ng-template cTemplateId="widgetValueTemplate" ngPreserveWhitespaces>
-        <span>{{apiStats.Price.value}}</span>
+        <span>${{apiStats.Price.value}}</span> <br>
         <span class="fw-normal" style="font-size: 12px">
           ({{apiStats.Price.rate}}% <svg cIcon name={{apiStats.Price.arrow}} size="sm"></svg>)
         </span>
@@ -128,7 +128,7 @@
   <c-col sm="5" xl="2">
     <c-widget-stat-a [title]="'Returns'" color="info">
       <ng-template cTemplateId="widgetValueTemplate" ngPreserveWhitespaces>
-        <span>{{apiStats.Returns.value}}</span>
+        <span>{{apiStats.Returns.value}}</span> <br>
         <span class="fw-normal" style="font-size: 12px">
           ({{apiStats.Returns.rate}}% <svg cIcon name={{apiStats.Returns.arrow}} size="sm"></svg>)
         </span>
@@ -169,7 +169,7 @@
   <c-col sm="5" xl="2">
     <c-widget-stat-a [title]="'Churns'" color="dark">
       <ng-template cTemplateId="widgetValueTemplate" ngPreserveWhitespaces>
-        <span>{{apiStats.Churns.value}}</span>
+        <span>{{apiStats.Churns.value}}</span> <br>
         <span class="fw-normal" style="font-size: 12px">
           ({{apiStats.Churns.rate}}% <svg cIcon name={{apiStats.Churns.arrow}} size="sm"></svg>)
         </span>
