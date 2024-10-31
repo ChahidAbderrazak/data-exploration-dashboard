@@ -1,5 +1,5 @@
 import time
-
+import warnings
 # for MySQL
 import mysql.connector
 
@@ -62,7 +62,7 @@ class MySQL_connector:
         # The SQL connection has errors
         except mysql.connector.Error as err:
             # Print the error message
-            print(f"Error: {err}")
+
             # Handle specific error codes
             if err.errno == 1062:
                 print(
@@ -78,8 +78,10 @@ class MySQL_connector:
                 print(
                     f"Error: Access denied for user [{self.username}]. Error Code: {err.errno}"
                 )
-            # else:
-            #     print(f"General MySQL Error. Error Code: {err.errno}")
+            else:
+                warnings.warn(
+                    f"Warning: cannot connect to database!!  Error Code: {err.errno} "
+                )
 
             return True
 
@@ -170,9 +172,6 @@ class PostgreSQL_connector:
                 print(f"Error: Foreign key violation. Error Code: {error.pgcode}")
             else:
                 print(f"General Database Error. Error Code: {error.pgcode}")
-
-                print(f"General MySQL Error. Error Code: {err.errno}")
-
             return True
 
     def connect_to_database(self, max_attempt=3, delay=2):
@@ -240,9 +239,13 @@ class SQL_connector:
             self.Database = None
             raise f" datatabse type {database_type} is not define"
 
-        # set conenct cursor
-        self.connection = self.Database.connection
-        self.cursor = self.connection.cursor()
+        try:
+            # set connect cursor
+            self.connection = self.Database.connection
+            self.cursor = self.connection.cursor()
+
+        except Exception as e:
+            raise(e)
 
     def database_info(self):
         print(f"---------------------------------")
@@ -266,27 +269,55 @@ class SQL_connector:
         try:
             self.cursor.execute(query)
             self.connection.commit()
-            return False
 
         except Exception as e:
             print(f"Query error: {e}")
-            return True
+
+        return self.cursor
 
     def create_table(self, table_name, query):
-        if not self.does_table_Exists(table_name=table_name):
-            # apply the query
-            err = self.send_query(query)
-            assert not err
+        # delete the table if it exists
+        if self.does_table_Exists(table_name):
+            # self.delete_table(table_name)
+            print("Table already exists!")
+        else:
+            # apply the create table query
+            self.send_query(query)
+            assert self.does_table_Exists(table_name=table_name)
             print("Table created successfully!")
 
     def delete_table(self, table_name):
         delete_table_query = f"DROP TABLE {table_name};"
 
-        if not self.does_table_Exists(table_name=table_name):
+        if self.does_table_Exists(table_name=table_name):
             # apply the query
-            err = self.send_query(delete_table_query)
-            assert not err
+            self.send_query(delete_table_query)
+            assert not self.does_table_Exists(table_name=table_name)
             print("Table deleted successfully!")
+
+    def search_for_sample(self, table_name, data={}):
+        """Check that the item was actually inserted into the database"""
+
+        # build the search query
+        query = f"SELECT * from {table_name} "
+        if len(data) > 0:
+            query += " where "
+            for idx, key in enumerate(data.keys()):
+                query += f""" {key}="{data[key]}" """
+                if idx < len(data) - 1:
+                    query += " AND "
+
+        # run the query
+        cursor = self.connection.cursor(dictionary=True)
+        cursor.execute(query)
+        items = cursor.fetchall()
+        cursor.close()
+
+        if len(data) > 0 and len(items)>1:
+            warnings.warn(
+                f"\n\nWarning: the record {data} seems to have {len(items)} duplicate : \n{items}"
+            )
+        return items
 
 
 if __name__ == "__main__":

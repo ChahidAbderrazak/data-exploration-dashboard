@@ -1,9 +1,9 @@
 {
-  "name": "coreui-free-angular-admin-template",
+  "name": "e-commerce dashboard",
   "version": "5.2.16",
-  "copyright": "Copyright 2024 creativeLabs Łukasz Holeczek",
+  "copyright": "Copyright 2024 Abderrazak Chahid",
   "license": "MIT",
-  "author": "The CoreUI Team (https://github.com/orgs/coreui/people) and contributors",
+  "author": "Abderrazak Chahid (https://github.com/orgs/coreui/people) and contributors",
   "homepage": "https://coreui.io/angular",
   "config": {
     "theme": "default",

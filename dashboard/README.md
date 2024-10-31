@@ -8,17 +8,11 @@
 ![angular](https://img.shields.io/badge/angular-^18.2.0-lightgrey.svg?style=flat-square&logo=angular)
 
 [npm-coreui-angular]: https://www.npmjs.com/package/@coreui/angular
-
 [npm-coreui-angular-badge]: https://img.shields.io/npm/v/@coreui/angular.png?style=flat-square
-
 [npm-coreui-angular-badge-next]: https://img.shields.io/npm/v/@coreui/angular/next?style=flat-square&color=red
-
 [npm-coreui-angular-download]: https://img.shields.io/npm/dm/@coreui/angular.svg?style=flat-square
-
 [npm-coreui]: https://www.npmjs.com/package/@coreui/coreui
-
 [npm-coreui-badge]: https://img.shields.io/npm/v/@coreui/coreui.png?style=flat-square
-
 [npm-coreui-download]: https://img.shields.io/npm/dm/@coreui/coreui.svg?style=flat-square
 
 # CoreUI Free Admin Dashboard Template for Angular 18
@@ -33,41 +27,41 @@ customize your project for almost any device – be it Mobile, Web or WebApp –
 
 ## Table of Contents
 
-* [Versions](#versions)
-* [CoreUI Pro](#coreui-pro)
-* [Quick Start](#quick-start)
-* [Installation](#installation)
-* [Basic usage](#basic-usage)
-* [What's included](#whats-included)
-* [Documentation](#documentation)
-* [Versioning](#versioning)
-* [Creators](#creators)
-* [Community](#community)
-* [Copyright and License](#copyright-and-license)
+- [Versions](#versions)
+- [CoreUI Pro](#coreui-pro)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Basic usage](#basic-usage)
+- [What's included](#whats-included)
+- [Documentation](#documentation)
+- [Versioning](#versioning)
+- [Creators](#creators)
+- [Community](#community)
+- [Copyright and License](#copyright-and-license)
 
 ## Versions
 
-* [CoreUI Free Bootstrap Admin Template](https://github.com/coreui/coreui-free-bootstrap-admin-template)
-* [CoreUI Free Angular Admin Template](https://github.com/coreui/coreui-free-angular-admin-template)
-* [CoreUI Free React.js Admin Template](https://github.com/coreui/coreui-free-react-admin-template)
-* [CoreUI Free Vue.js Admin Template](https://github.com/coreui/coreui-free-vue-admin-template)
+- [CoreUI Free Bootstrap Admin Template](https://github.com/coreui/coreui-free-bootstrap-admin-template)
+- [CoreUI Free Angular Admin Template](https://github.com/coreui/coreui-free-angular-admin-template)
+- [CoreUI Free React.js Admin Template](https://github.com/coreui/coreui-free-react-admin-template)
+- [CoreUI Free Vue.js Admin Template](https://github.com/coreui/coreui-free-vue-admin-template)
 
 ## CoreUI Pro
 
-* 💪  [CoreUI Pro Angular Admin Template](https://coreui.io/product/angular-dashboard-template/)
-* 💪  [CoreUI Pro Bootstrap Admin Template](https://coreui.io/product/bootstrap-dashboard-template/)
-* 💪  [CoreUI Pro React Admin Template](https://coreui.io/product/react-dashboard-template/)
-* 💪  [CoreUI Pro Next.js Admin Template](https://coreui.io/product/next-js-dashboard-template/)
-* 💪  [CoreUI Pro Vue Admin Template](https://coreui.io/product/vue-dashboard-template/)
+- 💪 [CoreUI Pro Angular Admin Template](https://coreui.io/product/angular-dashboard-template/)
+- 💪 [CoreUI Pro Bootstrap Admin Template](https://coreui.io/product/bootstrap-dashboard-template/)
+- 💪 [CoreUI Pro React Admin Template](https://coreui.io/product/react-dashboard-template/)
+- 💪 [CoreUI Pro Next.js Admin Template](https://coreui.io/product/next-js-dashboard-template/)
+- 💪 [CoreUI Pro Vue Admin Template](https://coreui.io/product/vue-dashboard-template/)
 
 ## CoreUI PRO Angular Admin Templates
 
 | Default Theme                                                                                                                                                                      | Light Theme                                                                                                                                                                    |
-|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [![CoreUI PRO Angular Admin Template](https://coreui.io/images/templates/coreui_pro_default_light_dark.webp)](https://coreui.io/product/angular-dashboard-template/?theme=default) | [![CoreUI PRO Angular Admin Template](https://coreui.io/images/templates/coreui_pro_light_light_dark.webp)](https://coreui.io/product/angular-dashboard-template/?theme=light) |
 
 | Modern Theme                                                                                                                                                                             | Bright Theme                                                                                                                                                                    |
-|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [![CoreUI PRO Angular Admin Template](https://coreui.io/images/templates/coreui_pro_default_v3_light_dark.webp)](https://coreui.io/product/angular-dashboard-template/?theme=default-v3) | [![CoreUI PRO React Admin Template](https://coreui.io/images/templates/coreui_pro_light_v3_light_dark.webp)](https://coreui.io/product/angular-dashboard-template/?theme=light) |
 
 ## Quick Start
@@ -96,14 +90,14 @@ npm install -g @angular/cli
 
 ### Installation
 
-``` bash
+```bash
 $ npm install
 $ npm update
 ```
 
 ### Basic usage
 
-``` bash
+```bash
 # dev server with hot reload at http://localhost:4200
 $ npm start
 ```
@@ -129,7 +123,7 @@ coreui-free-angular-admin-template
 ├── src/                         # project root
 │   ├── app/                     # main app directory
 |   │   ├── icons/               # icons set for the app
-|   │   ├── layout/              # layout 
+|   │   ├── layout/              # layout
 |   |   │   └── default-layout/  # layout components
 |   |   |       └── _nav.js      # sidebar navigation config
 |   │   └── views/               # application views
@@ -187,13 +181,13 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 
 **Łukasz Holeczek**
 
-* <https://twitter.com/lukaszholeczek>
-* <https://github.com/mrholek>
-* <https://github.com/coreui>
+- <https://twitter.com/lukaszholeczek>
+- <https://github.com/mrholek>
+- <https://github.com/coreui>
 
 **CoreUI team**
 
-* https://github.com/orgs/coreui/people
+- https://github.com/orgs/coreui/people
 
 ## Community
 

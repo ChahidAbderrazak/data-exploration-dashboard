@@ -1,3 +1,8 @@
+import { FooterComponent } from './footer/footer.component';
+import { HeaderComponent } from './header/header.component';
+import { CardsComponent } from './cards/cards.component';
+
+import { Chart } from 'chart.js';
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
@@ -13,12 +18,22 @@ import { ColorModeService } from '@coreui/angular';
 import { IconSetService } from '@coreui/icons-angular';
 import { iconSubset } from './icons/icon-subset';
 
+
+// @Component({
+//   selector: 'app-root',
+//   standalone: true,
+//   imports: [RouterOutlet, FooterComponent, HeaderComponent, CardsComponent],
+//   templateUrl: './app.component.html',
+//   styleUrl: './app.component.css',
+// })
+
 @Component({
   selector: 'app-root',
   template: '<router-outlet />',
   standalone: true,
   imports: [RouterOutlet],
 })
+
 export class AppComponent implements OnInit {
   title = 'E-commerce Data Exploration';
 
@@ -62,3 +77,4 @@ export class AppComponent implements OnInit {
       .subscribe();
   }
 }
+

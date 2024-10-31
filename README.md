@@ -6,19 +6,17 @@ My response to a data engineering competition hosted by [Desa Analytics](https:/
 
 - [x] build from a dockerfile
 - [x] run MySQL database + FastAPI server
-- [ ] run data processing and exploration pipeline using demo data
+- [x] run data processing and exploration pipeline using demo data
 - [ ] design/implement a high-level insights dashboard using NodeJs/HTML/CSS-based develop to visualize the data processing outcomes and insights
-- [ ] submit zipped folder containing all competition materials
-
 
 Please feel free to contact me or post your issues/comments.
+
 <p align="center">
 <img  src="dashboard/files/dashboard.png" alt="alt text" width="512" >
  </p>
 <p align="center">
 The developed E-commerce dashboard
 </p>
-
 
 # I. Configuration file
 
@@ -86,5 +84,6 @@ Download the competition csv file from [here](https://drive.google.com/drive/fol
 # Acknowledgement
 
 The main resources used/adapted adapted with/without modifications are cited as follows:
-*  [Angular chart from API ](https://github.com/desoga10/angular-chart/tree/master) by [desoga10](https://github.com/desoga10)
-*  [Examples of Dashboard components](https://coreui.io/product/free-bootstrap-admin-template/) 
+
+- [Angular chart from API ](https://github.com/desoga10/angular-chart/tree/master) by [desoga10](https://github.com/desoga10)
+- [Examples of Dashboard components](https://coreui.io/product/free-bootstrap-admin-template/)

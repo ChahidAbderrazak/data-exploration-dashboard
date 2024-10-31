@@ -24,7 +24,7 @@
 //         //                 sh '''
 //         //                 python -m pip install --upgrade pip
 //         //                 pip install pytest 
-//         //                 #------------------------------------------------------------------------
+//         //                 ###----------------------------------------------------------------------
 //         //                 echo "Testing the code..."
 //         //                 mkdir -p logs/reports/
 //         //                 python -m pytest -vvrxXs --junitxml logs/reports/pytest_results.xml ./
@@ -49,7 +49,7 @@
 //                         sh '''
 //                         python -m pip install --upgrade pip
 //                         pip install flake8 black black[jupyter]
-//                         #------------------------------------------------------------------------
+//                         ###----------------------------------------------------------------------
 //                         bash ./bash/0-debug.sh
 //                         '''
 //                     }

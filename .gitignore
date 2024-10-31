@@ -9,11 +9,14 @@ data/**
 *.session.sql
 **/test_syntax.py
 **/tmp/**
+**/tutorials/**
 
 **/src0/**
 
 **/syntax.py
 .Trash**
+### Node.JS ###
+*.sql
 
 ### Node.JS ###
 **/node_modules/**
@@ -196,3 +199,4 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+docs/dev.pdf
