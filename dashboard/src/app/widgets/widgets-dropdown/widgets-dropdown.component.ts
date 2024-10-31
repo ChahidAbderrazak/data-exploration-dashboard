@@ -8,6 +8,7 @@ import {
   ViewChild,
   Input,
 } from '@angular/core';
+import { NgIf, NgFor } from '@angular/common';
 import { getStyle } from '@coreui/utils';
 import { ChartjsComponent } from '@coreui/angular-chartjs';
 import { RouterLink } from '@angular/router';
@@ -47,6 +48,8 @@ import {
     RouterLink,
     DropdownDividerDirective,
     ChartjsComponent,
+    NgIf,
+    NgFor,
   ],
 })
 export class WidgetsDropdownComponent implements OnInit, AfterContentInit {

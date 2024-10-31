@@ -1,23 +1,25 @@
 import io
 import os
 import shutil
+import sys
 import warnings
 from pathlib import Path
 from typing import List
 
+# sys.path
+# sys.path.append("src")
 import pandas as pd
 import uvicorn
 from fastapi import File, HTTPException, UploadFile
 from mysql.connector import Error
 from pydantic import BaseModel
 
-from utils.configuration import (
-    get_create_table_query,
-    setup_database,
-    setup_fastapi_server,
-)
+from utils.configuration import (get_create_table_query, setup_database,
+                                 setup_fastapi_server)
+from utils.data_exploration import (demo_preparation_modeling_pipelines,
+                                    get_widget_info)
 from utils.mysql_utils import SQL_connector
-from utils.data_exploration import  get_widget_info, demo_preparation_modeling_pipelines
+
 app = setup_fastapi_server()
 
 # Database connection parameters

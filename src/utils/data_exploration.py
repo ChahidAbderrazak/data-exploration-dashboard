@@ -269,6 +269,42 @@ def data_preparation_pipeline(spark, spark_df):
     return spark_df, missing_invalid_df
 
 
+
+def get_widget_info(value, rate, digits=0):
+    """
+    build the attributes of the dashboard widget
+    """
+    # print(value, rate)
+    # print(type(value), type(rate))
+
+    rate=float(rate)
+    if digits==0:
+        value=int(float(value))
+    else:
+        value=round(float(value), digits)
+
+    # define the arrow direction and color
+    if rate > 0:
+        arrow = "cilArrowTop"
+        color = "color:green;"
+    elif rate == 0:
+        arrow = ""
+        color = "color:gray;"
+    else:
+        arrow = "cilArrowBottom"
+        color = "color:red;"
+
+    widget_dic = {
+        "value": "{:,}".format(value),
+        "rate": rate,
+        "arrow": arrow,
+        "color": color,
+    }
+
+    return widget_dic
+
+
+
 # -- rank ales by product category
 def rank_sales_by_product_category(spark_df, topN=5):
     ranked_product_category_spark_df = (
@@ -481,28 +517,47 @@ def rank_sales_by_clients(spark_df, topN=5):
     transactions_spark_df = (
         spark_df.groupBy(spark_df.Cust_ID, spark_df.Name, spark_df.Age)
         .agg(
-            f.count("Cust_ID").alias("transactions count"),
+            f.count("Cust_ID").alias("transactions_count"),
             f.min("Date").alias("first transactions"),
             f.max("Date").alias("latest transactions"),
             f.sum("Purch_Amt").alias("sum_Purch_Amt"),
             f.avg("Age").alias("avg_Age"),
             f.sum("Returns").alias("sum_Returns"),
             f.sum("Churn").alias("sum_Churn"),
+            f.expr("CASE WHEN transactions_count IN ('1') THEN 'New' ELSE 'Recurring' END").alias("clientType"),
+            # f.expr("transactions_count").alias("Satisfaction")
         )
-        .orderBy("transactions count", ascending=False)
-        .toPandas()
+        .orderBy("transactions_count", ascending=False)
+
     )
 
-    transactions_spark_df["percentage"] = round(
+    transactions_df = transactions_spark_df.withColumn('Satisfaction', f.round(100*f.col('sum_Returns') / f.col('transactions_count'),2)).toPandas()
+    transactions_df["percentage"] = round(
         100
-        * transactions_spark_df["sum_Purch_Amt"]
-        / np.sum(transactions_spark_df["sum_Purch_Amt"]),
+        * transactions_df["sum_Purch_Amt"]
+        / np.sum(transactions_df["sum_Purch_Amt"]),
         2,
     )
-    top_ranked_clients_df = transactions_spark_df[:topN]
-    worst_ranked_clients_df = transactions_spark_df[-topN:]
-    return top_ranked_clients_df, worst_ranked_clients_df
 
+    # TODO : compute the satisfaction rate
+    Satisfaction_rate = transactions_df["Satisfaction"].mean()
+
+    # # compute the loyal client : no returns + transactions>mean(transactions)
+    nb_transactions_th = transactions_df["transactions_count"].mean() + 3*transactions_df["transactions_count"].std()
+    Loyal_clients_df = transactions_df.loc[(transactions_df['transactions_count'] >= nb_transactions_th)]
+    Recurring_clients_df = transactions_df.loc[(transactions_df['clientType'] == "Recurring")]
+    New_clients_df = transactions_df.loc[(transactions_df['clientType'] == "New")]
+
+    clients_dict={"Total_clients":transactions_df.shape[0],
+                  "Loyal_clients":Loyal_clients_df.shape[0],
+                  "Recurring_clients":Recurring_clients_df.shape[0],
+                  "New_clients":New_clients_df.shape[0],
+                  "Satisfaction_rate":Satisfaction_rate,
+                 }
+
+    top_ranked_clients_df = transactions_df[:topN]
+    worst_ranked_clients_df = transactions_df[-topN:]
+    return top_ranked_clients_df, worst_ranked_clients_df, clients_dict
 
 # rank sales by gender
 def rank_sales_by_gender(spark_df, topN=5):
@@ -616,7 +671,7 @@ def data_analysis_pipeline(spark, spark_df, topN=5, verbose=0):
     )
 
     # rank sales by clients
-    top_ranked_clients_df, worst_ranked_clients_df = rank_sales_by_clients(
+    top_ranked_clients_df, worst_ranked_clients_df, clients_dict = rank_sales_by_clients(
         spark_df, topN=topN
     )
 
@@ -639,9 +694,17 @@ def data_analysis_pipeline(spark, spark_df, topN=5, verbose=0):
     ratio_male = 100-ratio_female
     ratio_gender_dict={"Male": str(round(ratio_male,1)), "Female": str(round(ratio_female,1))}
 
+
+    # -- rank ales by product category
+    total_categories_clients, ranked_product_category_df = rank_sales_by_product_category(spark_df, topN=topN)
+
+
+
     return (
         growth_rate_dict,
         ratio_gender_dict,
+        clients_dict,
+        ranked_product_category_df,
         monthly_stats_spark_df.toPandas(),
         yearly_stats_spark_df.toPandas(),
         past_sales_stats_df,
@@ -664,37 +727,6 @@ def model_deployment_pipeline():
     return {}
 
 
-def get_widget_info(value, rate, digits=0):
-    """
-    build the attributes of the dashboard widget
-    """
-    rate=float(rate)
-    if digits==0:
-        value=int(float(value))
-    else:
-        value=round(float(value), digits)
-
-    # define the arrow direction and color
-    if rate > 0:
-        arrow = "cilArrowTop"
-        color = "color:green;"
-    elif rate == 0:
-        arrow = ""
-        color = "color:gray;"
-    else:
-        arrow = "cilArrowBottom"
-        color = "color:red;"
-
-    widget_dic = {
-        "value": "{:,}".format(value),
-        "rate": rate,
-        "arrow": arrow,
-        "color": color,
-    }
-
-    return widget_dic
-
-
 def full_preparation_modeling_pipelines(filename_path):
     # ---------------------------------------------------------------
     # initialize the spark sessions
@@ -711,6 +743,8 @@ def full_preparation_modeling_pipelines(filename_path):
     (
         growth_rate_dict,
         ratio_gender_dict,
+        clients_dict,
+        ranked_product_category_df,
         monthly_stats_df,
         yearly_stats_df,
         past_sales_stats_df,
@@ -724,6 +758,8 @@ def full_preparation_modeling_pipelines(filename_path):
     data_dict, stats_dict = prepare_the_API_dicts(
         growth_rate_dict,
         ratio_gender_dict,
+        clients_dict,
+        ranked_product_category_df,
         monthly_stats_df,
         yearly_stats_df,
         past_sales_stats_df,
@@ -739,6 +775,8 @@ def full_preparation_modeling_pipelines(filename_path):
 def prepare_the_API_dicts(
     growth_rate_dict,
     ratio_gender_dict,
+    clients_dict,
+    ranked_product_category_df,
     monthly_stats_df,
     yearly_stats_df,
     past_sales_stats_df,
@@ -797,7 +835,7 @@ def prepare_the_API_dicts(
     customer_dic = get_widget_info(value=current_sales_stats_df["sum_sum_Cust_ID"],
                                     rate=growth_rate_dict["Cust_ID"])
 
-    stats_dict.update({"Customer": customer_dic})
+    stats_dict.update({"Transactions": customer_dic})
 
     # -- Income
     income_dic = get_widget_info(value=current_sales_stats_df["sum_sum_Purch_Amt"],
@@ -820,8 +858,50 @@ def prepare_the_API_dicts(
                                   rate=growth_rate_dict["Churn"])
     stats_dict.update({"Churns": churns_dic})
 
-    # display
+    # -- Total Clients
+    val_dic = get_widget_info(value=clients_dict["Total_clients"],
+                                  rate=100*clients_dict["Total_clients"]/clients_dict["Total_clients"])
+    stats_dict.update({"Total_clients": val_dic})
 
+    # -- Recurring Clients
+    val_dic = get_widget_info(value=clients_dict["Recurring_clients"],
+                                  rate=100*clients_dict["Recurring_clients"]/clients_dict["Total_clients"])
+    stats_dict.update({"Recurring_clients": val_dic})
+
+    # -- New Clients
+    val_dic = get_widget_info(value=clients_dict["New_clients"],
+                                  rate=100*clients_dict["New_clients"]/clients_dict["Total_clients"])
+    stats_dict.update({"New_clients": val_dic})
+
+    # -- Loyal Clients
+    val_dic = get_widget_info(value=clients_dict["Loyal_clients"],
+                                  rate=100*clients_dict["Loyal_clients"]/clients_dict["Total_clients"])
+    stats_dict.update({"Loyal_clients": val_dic})
+
+
+    # -- Loyal Clients
+    val_dic = get_widget_info(value=clients_dict["Satisfaction_rate"],
+                                  rate=0,
+                                  digits=3)
+    stats_dict.update({"Satisfaction_rate": val_dic})
+
+
+
+    #  product categories growth
+    for  index, row in  ranked_product_category_df.iterrows():
+        # print(f"row={row}")
+        print("value=", row["Clients count"])
+        product_dic = get_widget_info(value=row["Clients count"],
+                                    rate=round(float(row["percentage"]), 2))
+        stats_dict.update({row["Category"]: product_dic})
+
+
+
+    # sales by gender
+    stats_dict.update({"Male_ratio": round(float(ratio_gender_dict['Male']),1)})
+    stats_dict.update({"Female_ratio": round(float(ratio_gender_dict['Female']),1)})
+
+    # display
     print(f"stats_dict={stats_dict}")
     print(f"data_dict={data_dict}")
 
@@ -832,6 +912,7 @@ def demo_preparation_modeling_pipelines():
     try:
         growth_rate_dict = load_dict_from_json(filepath="data/test/growth_rate_dict.json")
         ratio_gender_dict = load_dict_from_json(filepath="data/test/ratio_gender_dict.json")
+        clients_dict = load_dict_from_json(filepath="data/test/clients_dict.json")
 
         yearly_stats_df = pd.DataFrame(
             load_dict_from_json(filepath="data/test/yearly_stats_spark_df.json")
@@ -854,11 +935,16 @@ def demo_preparation_modeling_pipelines():
         top_purchases_by_gender_df = pd.DataFrame(
             load_dict_from_json(filepath="data/test/top_purchases_by_gender_df.json")
         )
+        ranked_product_category_df = pd.DataFrame(
+            load_dict_from_json(filepath="data/test/ranked_product_category_df.json")
+        )
 
         # prepare the API dict
         data_dict, stats_dict =prepare_the_API_dicts(
             growth_rate_dict,
             ratio_gender_dict,
+            clients_dict,
+            ranked_product_category_df,
             monthly_stats_df,
             yearly_stats_df,
             past_sales_stats_df,
@@ -875,10 +961,12 @@ def demo_preparation_modeling_pipelines():
     return data_dict, stats_dict
 
 
-# def save_resutls_to_json():
-#     # save the results in json files
-#     save_dict_to_json(ratio_gender_dict, filepath="data/test/ratio_gender_dict.json")
-#     save_dict_to_json(growth_rate_dict, filepath="data/test/growth_rate_dict.json")
+def save_resutls_to_json():
+    # save the results in json files
+    save_dict_to_json(ratio_gender_dict, filepath="data/test/ratio_gender_dict.json")
+    save_dict_to_json(growth_rate_dict, filepath="data/test/growth_rate_dict.json")
+    save_dict_to_json(clients_dict, filepath="data/test/clients_dict.json")
+
 
 #     save_dict_to_json(current_sales.toPandas().astype(str).to_dict(orient="records"), filepath="data/test/current_sales.json")
 #     save_dict_to_json(past_sales.toPandas().astype(str).to_dict(orient="records"), filepath="data/test/past_sales.json")

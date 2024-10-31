@@ -1,11 +1,15 @@
+<div *ngIf="apiStats">
+
 <c-row class="g-4">
   <c-col sm="5" xl="2">
-    <c-widget-stat-a color="primary" [title]="'Customer'">
+    <c-widget-stat-a color="primary" [title]="'Clients'">
       <ng-template cTemplateId="widgetValueTemplate" ngPreserveWhitespaces>
-        <span>${{apiStats.Customer.value}}</span> <br>
+          <span>{{apiStats.Total_clients.value}}</span> <br>
         <span class="fw-normal" style="font-size: 12px">
-          ({{apiStats.Customer.rate}}% <svg cIcon name={{apiStats.Customer.arrow}} size="sm"></svg>)
+          (Active)
         </span>
+
+
       </ng-template>
       <ng-template cTemplateId="widgetActionTemplate">
         <c-dropdown alignment="end" variant="btn-group">
@@ -208,3 +212,5 @@
     </c-widget-stat-a>
   </c-col>
 </c-row>
+
+</div>
