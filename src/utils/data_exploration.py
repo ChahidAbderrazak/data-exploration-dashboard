@@ -616,6 +616,7 @@ def plot_sales_by_gender(spark_df):
     fig = plt.figure(figsize=(25, nb_categories))
 
     #  TODO : check the plot here
+    
     # grid_size = (1, 1)
     # ax = plt.subplot2grid(grid_size, (0, 0), colspan=1, rowspan=1)
     # plot = (

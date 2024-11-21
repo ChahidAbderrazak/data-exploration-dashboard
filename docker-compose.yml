@@ -25,7 +25,7 @@ services:
       context: ./src
       dockerfile: Dockerfile
 
-    image: ${APP_CNTNR_NAME}:${VERSION}
+    image: ${APP_IMG_BUILDER}:${VERSION}
     container_name: '${APP_CNTNR_NAME}'
     environment:
       - APP_SERVER_PORT=${APP_SERVER_PORT}
