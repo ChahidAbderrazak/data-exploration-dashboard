@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 #### -------------------------   STOP MLOPS SERVERS  ----------------------------
 dir=$(pwd)
 cd ../MLOPs-template/

@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # open MLOps frameworks
 #### -------------------------   RUN MLOPS SERVERS  ----------------------------

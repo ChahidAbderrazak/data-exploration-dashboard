@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 #### -----------------------   BUILDING THE ANGULAR.JS PROJECT  -------------------------------
 ng new angular-dashboard
 
