@@ -27,7 +27,7 @@ PROJECT_NAME=dashboard
 VERSION=v1
 
 #### -----------    DATA-SCIENCE APP  -----------
-IMG_BUILDER=dashboard-backend
+APP_IMG_BUILDER=dashboard-backend
 PYTHON_VERSION=python:3.8
 APP_CNTNR_NAME=datascience
 APP_SERVER_PORT=8383
